@@ -56,7 +56,7 @@ export default function SignInPage() {
         }
         toast.success("Welcome back!");
         const nextPath = searchParams.get('next') || '/dashboard';
-        router.push(nextPath);
+        window.location.assign(nextPath);
       } else {
         toast.error(data.messages?.error || "Invalid login credentials.");
       }

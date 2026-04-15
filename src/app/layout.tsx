@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+import { ApiAuthBridge } from "@/components/api-auth-bridge";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarConfigProvider } from "@/contexts/sidebar-context";
 import { inter } from "@/lib/fonts";
@@ -13,6 +14,11 @@ import {
 export const metadata: Metadata = {
   title: "LinkForex",
   description: "LinkForex new admin UI",
+  icons: {
+    icon: "/logo-removebg-preview.png",
+    shortcut: "/logo-removebg-preview.png",
+    apple: "/logo-removebg-preview.png",
+  },
 };
 
 export default function RootLayout({
@@ -68,6 +74,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider defaultTheme="system" storageKey="nextjs-ui-theme">
           <SidebarConfigProvider>
+            <ApiAuthBridge />
             {children}
           </SidebarConfigProvider>
         </ThemeProvider>
