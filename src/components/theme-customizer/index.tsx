@@ -13,6 +13,10 @@ import { LayoutTab } from './layout-tab'
 import { ImportModal } from './import-modal'
 import { cn } from '@/lib/utils'
 import type { ImportedTheme } from '@/types/theme-customizer'
+import {
+  THEME_CUSTOMIZER_STORAGE_KEY,
+  defaultThemeCustomizerState,
+} from '@/lib/theme-persistence'
 
 interface ThemeCustomizerProps {
   open: boolean
@@ -29,6 +33,38 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
   const [selectedRadius, setSelectedRadius] = React.useState("0.5rem")
   const [importModalOpen, setImportModalOpen] = React.useState(false)
   const [importedTheme, setImportedTheme] = React.useState<ImportedTheme | null>(null)
+  const [preferencesLoaded, setPreferencesLoaded] = React.useState(false)
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+
+    try {
+      const raw = window.localStorage.getItem(THEME_CUSTOMIZER_STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        setSelectedTheme(parsed.selectedTheme ?? defaultThemeCustomizerState.selectedTheme)
+        setSelectedTweakcnTheme(parsed.selectedTweakcnTheme ?? defaultThemeCustomizerState.selectedTweakcnTheme)
+        setSelectedRadius(parsed.selectedRadius ?? defaultThemeCustomizerState.selectedRadius)
+      }
+    } catch {
+      // ignore malformed persisted theme customizer state
+    } finally {
+      setPreferencesLoaded(true)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (!preferencesLoaded || typeof window === "undefined") return
+
+    window.localStorage.setItem(
+      THEME_CUSTOMIZER_STORAGE_KEY,
+      JSON.stringify({
+        selectedTheme,
+        selectedTweakcnTheme,
+        selectedRadius,
+      })
+    )
+  }, [preferencesLoaded, selectedTheme, selectedTweakcnTheme, selectedRadius])
 
   const handleReset = () => {
     // Complete reset to application defaults
@@ -48,6 +84,10 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
 
     // 4. Reset sidebar to defaults
     updateSidebarConfig({ variant: "inset", collapsible: "offcanvas", side: "left" })
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(THEME_CUSTOMIZER_STORAGE_KEY)
+    }
   }
 
   const handleImport = (themeData: ImportedTheme) => {
@@ -66,6 +106,8 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
 
   // Re-apply themes when theme mode changes
   React.useEffect(() => {
+    if (!preferencesLoaded) return
+
     if (importedTheme) {
       applyImportedTheme(importedTheme, isDarkMode)
     } else if (selectedTheme) {
@@ -76,7 +118,7 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
         applyTweakcnTheme(selectedPreset, isDarkMode)
       }
     }
-  }, [isDarkMode, importedTheme, selectedTheme, selectedTweakcnTheme, applyImportedTheme, applyTheme, applyTweakcnTheme])
+  }, [preferencesLoaded, isDarkMode, importedTheme, selectedTheme, selectedTweakcnTheme, applyImportedTheme, applyTheme, applyTweakcnTheme])
 
   return (
     <>

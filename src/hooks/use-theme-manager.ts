@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/use-theme'
 import { baseColors } from '@/config/theme-customizer-constants'
 import { colorThemes } from '@/config/theme-data'
 import type { ThemePreset, ImportedTheme } from '@/types/theme-customizer'
+import { THEME_SNAPSHOT_STORAGE_KEY } from '@/lib/theme-persistence'
 
 export function useThemeManager() {
   const { theme, setTheme } = useTheme()
@@ -62,6 +63,25 @@ export function useThemeManager() {
         root.style.removeProperty(property)
       }
     }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(THEME_SNAPSHOT_STORAGE_KEY)
+    }
+  }, [])
+
+  const persistThemeSnapshot = React.useCallback(() => {
+    if (typeof window === "undefined") return
+
+    const root = document.documentElement
+    const snapshot: Record<string, string> = {}
+
+    for (let i = 0; i < root.style.length; i++) {
+      const property = root.style[i]
+      if (!property.startsWith('--')) continue
+      snapshot[property] = root.style.getPropertyValue(property)
+    }
+
+    window.localStorage.setItem(THEME_SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshot))
   }, [])
 
   const updateBrandColorsFromTheme = React.useCallback((styles: Record<string, string>) => {
@@ -90,7 +110,8 @@ export function useThemeManager() {
 
     // Update brand colors values when theme changes
     updateBrandColorsFromTheme(styles)
-  }, [resetTheme, updateBrandColorsFromTheme])
+    persistThemeSnapshot()
+  }, [resetTheme, updateBrandColorsFromTheme, persistThemeSnapshot])
 
   const applyTweakcnTheme = React.useCallback((themePreset: ThemePreset, darkMode: boolean) => {
     // Reset and apply theme variables
@@ -104,7 +125,8 @@ export function useThemeManager() {
 
     // Update brand colors values when theme changes
     updateBrandColorsFromTheme(styles)
-  }, [resetTheme, updateBrandColorsFromTheme])
+    persistThemeSnapshot()
+  }, [resetTheme, updateBrandColorsFromTheme, persistThemeSnapshot])
 
   const applyImportedTheme = React.useCallback((themeData: ImportedTheme, darkMode: boolean) => {
     const root = document.documentElement
@@ -124,14 +146,17 @@ export function useThemeManager() {
       }
     })
     setBrandColorsValues(newBrandColors)
-  }, [])
+    persistThemeSnapshot()
+  }, [persistThemeSnapshot])
 
   const applyRadius = (radius: string) => {
     document.documentElement.style.setProperty('--radius', radius)
+    persistThemeSnapshot()
   }
 
   const handleColorChange = (cssVar: string, value: string) => {
     document.documentElement.style.setProperty(cssVar, value)
+    persistThemeSnapshot()
   }
 
   return {

@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ENDPOINTS } from '@/lib/api';
 import { getStoredUser, setStoredUser } from '@/lib/authStorage';
+import { Logo } from '@/components/logo';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,16 +69,13 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 dark:bg-slate-900">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-6">
-             <div className="h-12 w-48 relative">
-               {/* Replace with actual logo or placeholder */}
-               <div className="text-2xl font-black text-primary tracking-tighter">LINKFOREX</div>
-             </div>
+            <Logo size={34} className="w-auto" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">Admin Login</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Welcome</h2>
           <p className="text-sm text-muted-foreground">Enter your credentials to access the portal</p>
         </div>
 
@@ -100,7 +98,7 @@ export default function SignInPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium leading-none">Password</label>
-                <a href="#" className="text-xs text-primary hover:underline">Forgot password?</a>
+                <Link href="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />

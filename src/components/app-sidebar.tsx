@@ -22,6 +22,7 @@ import {
 import Link from "next/link"
 
 import { Logo } from "@/components/logo"
+import { getStoredUser } from "@/lib/authStorage"
 import { SidebarNotification } from "@/components/sidebar-notification"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -36,11 +37,6 @@ import {
 } from "@/components/ui/sidebar"
 
 const data = {
-  user: {
-    name: "LinkForex",
-    email: "admin@linkforex.com",
-    avatar: "",
-  },
   navGroups: [
     {
       label: "Overview",
@@ -115,6 +111,23 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [currentUser, setCurrentUser] = React.useState({
+    name: "System Admin",
+    email: "admin@linkforex.com",
+    avatar: "",
+  })
+
+  React.useEffect(() => {
+    const storedUser = getStoredUser<any>()
+    if (!storedUser) return
+
+    setCurrentUser({
+      name: storedUser.name || storedUser.username || "System Admin",
+      email: storedUser.email || "admin@linkforex.com",
+      avatar: "",
+    })
+  }, [])
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -135,7 +148,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         <SidebarNotification />
-        <NavUser user={data.user} />
+        <NavUser user={currentUser} />
       </SidebarFooter>
     </Sidebar>
   )

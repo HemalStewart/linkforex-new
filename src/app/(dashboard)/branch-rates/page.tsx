@@ -65,9 +65,31 @@ export default function BranchRatesPage() {
         applyToAll: false
     });
 
+    const isSenderBranch = (branch: any) => {
+        const senderFlag = String(
+            branch.sender_enabled ?? branch.is_sender_branch ?? branch.sender_branch ?? ''
+        ).toLowerCase();
+        const transactionType = String(
+            branch.default_transaction_type ?? branch.branch_default_transaction_type ?? ''
+        ).toLowerCase();
+
+        return (
+            branch.is_sender_branch === true ||
+            senderFlag === 'yes' ||
+            senderFlag === '1' ||
+            transactionType === 'sender' ||
+            transactionType === 'both'
+        );
+    };
+
+    const senderBranches = useMemo(
+        () => branches.filter(isSenderBranch),
+        [branches]
+    );
+
     const selectedBranch = useMemo(
-        () => branches.find((branch) => String(branch.id) === form.branchId) || null,
-        [branches, form.branchId]
+        () => senderBranches.find((branch) => String(branch.id) === form.branchId) || null,
+        [senderBranches, form.branchId]
     );
 
     const fetchData = async () => {
@@ -178,7 +200,7 @@ export default function BranchRatesPage() {
             
             const selectedCur = currencies.find(c => c.code === form.currencyCode);
 
-            const targetBranches = form.applyToAll ? branches : [selectedBranch];
+            const targetBranches = form.applyToAll ? senderBranches : [selectedBranch];
             
             for (const b of targetBranches) {
                 const bCode = String(b.code || b.transaction_prefix || b.id);
@@ -327,7 +349,7 @@ export default function BranchRatesPage() {
                                 <Select value={form.branchId} onValueChange={v => setForm({...form, branchId: v})}>
                                     <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
                                     <SelectContent>
-                                        {branches.map(b => (
+                                        {senderBranches.map(b => (
                                             <SelectItem key={`branch-${b.id}`} value={String(b.id)}>
                                                 {b.code ? `${b.name} (${b.code})` : b.name}
                                             </SelectItem>
@@ -362,7 +384,7 @@ export default function BranchRatesPage() {
                         <div className="flex items-center justify-between rounded-lg border p-4">
                             <div className="space-y-0.5">
                                 <Label>Apply to all sender branches</Label>
-                                <div className="text-xs text-muted-foreground">Updates rate for all active branches.</div>
+                                <div className="text-xs text-muted-foreground">Updates rate for all active sender branches.</div>
                             </div>
                             <Switch checked={form.applyToAll} onCheckedChange={c => setForm({...form, applyToAll: c})} />
                         </div>

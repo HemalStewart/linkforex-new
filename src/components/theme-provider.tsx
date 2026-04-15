@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ThemeProviderContext } from "@/contexts/theme-context"
+import { THEME_STORAGE_KEY } from "@/lib/theme-persistence"
 
 type Theme = "dark" | "light" | "system"
 
@@ -14,7 +15,7 @@ type ThemeProviderProps = {
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "vite-ui-theme",
+  storageKey = THEME_STORAGE_KEY,
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = React.useState<Theme>(
