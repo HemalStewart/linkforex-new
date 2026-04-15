@@ -71,11 +71,13 @@ export default function BranchCurrencyRatesPage() {
     }, []);
 
     const branchOptions = useMemo(() => {
-        const unique = new Map<string, { code: string; name: string }>();
+        const unique = new Map<string, { value: string; code: string; name: string }>();
         rows.forEach((row) => {
             const code = String(row.branch_code || '').trim();
-            if (!code || unique.has(code)) return;
-            unique.set(code, { code, name: row.branch_name || code });
+            const name = String(row.branch_name || code).trim();
+            const value = `${code}::${name}`;
+            if (!code || unique.has(value)) return;
+            unique.set(value, { value, code, name });
         });
         return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
     }, [rows]);
@@ -83,7 +85,8 @@ export default function BranchCurrencyRatesPage() {
     const filteredRows = useMemo(() => {
         return rows.filter(row => {
             const matchesSearch = !searchQuery || JSON.stringify(row).toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesBranch = branchFilter === 'all' || row.branch_code === branchFilter;
+            const rowValue = `${String(row.branch_code || '').trim()}::${String(row.branch_name || row.branch_code || '').trim()}`;
+            const matchesBranch = branchFilter === 'all' || rowValue === branchFilter;
             return matchesSearch && matchesBranch;
         });
     }, [rows, searchQuery, branchFilter]);
@@ -134,7 +137,7 @@ export default function BranchCurrencyRatesPage() {
                         <SelectContent>
                             <SelectItem value="all">All Branches</SelectItem>
                             {branchOptions.map(b => (
-                                <SelectItem key={`branch-filter-${b.code}`} value={b.code}>{b.name} ({b.code})</SelectItem>
+                                <SelectItem key={`branch-filter-${b.value}`} value={b.value}>{b.name} ({b.code})</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -166,7 +169,7 @@ export default function BranchCurrencyRatesPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="font-black text-primary">
-                                            {Number(row.customer_rate || 0).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+                                            {Number(row.customer_rate || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </div>
                                     </TableCell>
                                     <TableCell>

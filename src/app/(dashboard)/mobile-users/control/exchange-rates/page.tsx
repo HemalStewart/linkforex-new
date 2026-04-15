@@ -137,7 +137,7 @@ export default function MobileExchangeRatesPage() {
                                     <TableCell>
                                         <div className="flex items-center gap-1 font-mono text-emerald-600 font-bold">
                                             <TrendingUp size={14} />
-                                            {Number(row.rate || 0).toFixed(4)}
+                                            {Number(row.rate || 0).toFixed(2)}
                                         </div>
                                     </TableCell>
                                     <TableCell>

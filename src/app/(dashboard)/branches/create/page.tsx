@@ -61,7 +61,7 @@ export default function CreateBranchPage() {
         email_1: '',
         email_2: '',
         transaction_prefix: '',
-        default_transaction_type: 'Both',
+        default_transaction_type: '',
         day_transfer_limit: '100000',
         branch_ownership_type: 'Own',
         remarks: '',
@@ -196,16 +196,28 @@ export default function CreateBranchPage() {
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label className="text-xs">Primary Phone</Label>
+                                    <Label className="text-xs">Primary Contact</Label>
                                     <Input value={formData.telephone_1} onChange={e => setFormData({...formData, telephone_1: e.target.value})} />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-xs">Secondary Phone</Label>
+                                    <Label className="text-xs">Secondary Contact</Label>
                                     <Input value={formData.telephone_2} onChange={e => setFormData({...formData, telephone_2: e.target.value})} />
                                 </div>
-                                <div className="space-y-1 md:col-span-2">
-                                    <Label className="text-xs">Email Address</Label>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Primary Fax</Label>
+                                    <Input value={formData.fax_1} onChange={e => setFormData({...formData, fax_1: e.target.value})} />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Secondary Fax</Label>
+                                    <Input value={formData.fax_2} onChange={e => setFormData({...formData, fax_2: e.target.value})} />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Primary Email</Label>
                                     <Input type="email" value={formData.email_1} onChange={e => setFormData({...formData, email_1: e.target.value})} />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Secondary Email</Label>
+                                    <Input type="email" value={formData.email_2} onChange={e => setFormData({...formData, email_2: e.target.value})} />
                                 </div>
                             </div>
                         </CardContent>
@@ -236,7 +248,7 @@ export default function CreateBranchPage() {
                                 <div className="space-y-1 md:col-span-2">
                                     <Label className="text-xs">Transaction Type</Label>
                                     <Select value={formData.default_transaction_type} onValueChange={v => setFormData({...formData, default_transaction_type: v})}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Select transaction type" /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Sender">Sender Only</SelectItem>
                                             <SelectItem value="Receiver">Receiver Only</SelectItem>

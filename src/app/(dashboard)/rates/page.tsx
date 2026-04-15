@@ -142,7 +142,7 @@ export default function RatesPage() {
                     <p className="text-muted-foreground">Manage global digital rates for customers.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={fetchRates} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={fetchRates} disabled={loading} aria-label="Refresh customer digital rates" title="Refresh customer digital rates">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button onClick={() => setAddModalOpen(true)}>
@@ -181,7 +181,7 @@ export default function RatesPage() {
                                     <TableCell className="font-mono text-sm">{currency.code} ({currency.symbol})</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className="text-lg font-mono">
-                                            {parseFloat(currency.rate || '0').toFixed(4)}
+                                            {parseFloat(currency.rate || '0').toFixed(2)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>

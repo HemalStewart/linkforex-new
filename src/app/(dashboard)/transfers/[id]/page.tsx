@@ -157,7 +157,7 @@ export default function TransferDetailsPage() {
                         <CardTitle className="text-xs font-bold text-muted-foreground uppercase">Rate</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-xl font-bold">{parseFloat(transfer.rate).toFixed(4)}</div>
+                        <div className="text-xl font-bold">{parseFloat(transfer.rate).toFixed(2)}</div>
                         <p className="text-[10px] text-muted-foreground font-medium">Customer FX Rate</p>
                     </CardContent>
                </Card>

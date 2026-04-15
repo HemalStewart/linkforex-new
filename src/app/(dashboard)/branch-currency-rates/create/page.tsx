@@ -51,6 +51,23 @@ export default function CreateBranchCurrencyRatePage() {
         setAllBranches: false
     });
 
+    const isSenderBranch = (branch: any) => {
+        const senderFlag = String(
+            branch.sender_enabled ?? branch.is_sender_branch ?? branch.sender_branch ?? ''
+        ).toLowerCase();
+        const transactionType = String(
+            branch.default_transaction_type ?? branch.branch_default_transaction_type ?? ''
+        ).toLowerCase();
+
+        return (
+            branch.is_sender_branch === true ||
+            senderFlag === 'yes' ||
+            senderFlag === '1' ||
+            transactionType === 'sender' ||
+            transactionType === 'both'
+        );
+    };
+
     useEffect(() => {
         const fetchSetup = async () => {
             try {
@@ -76,7 +93,7 @@ export default function CreateBranchCurrencyRatePage() {
         setSaving(true);
         try {
             const targetBranches = formData.setAllBranches 
-                ? branches.filter(b => b.is_sender_branch || b.sender_enabled === 'yes') 
+                ? branches.filter(isSenderBranch)
                 : [branches.find(b => String(b.id) === formData.branchId)];
 
             if (targetBranches.length === 0 || !targetBranches[0]) {
@@ -129,7 +146,7 @@ export default function CreateBranchCurrencyRatePage() {
 
     if (loading) return <div className="p-12 text-center animate-pulse">Loading setup...</div>;
 
-    const senderBranches = branches.filter(b => b.is_sender_branch || b.sender_enabled === 'yes' || b.default_transaction_type === 'sender');
+    const senderBranches = branches.filter(isSenderBranch);
 
     return (
         <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">

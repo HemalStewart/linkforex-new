@@ -53,12 +53,42 @@ export default function BranchDetailsPage() {
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [countries, setCountries] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>(null);
 
     const fetchData = async () => {
         try {
-            const res = await fetch(ENDPOINTS.BRANCHES.DETAIL(id));
-            if (res.ok) setFormData(await res.json());
+            const [branchRes, countriesRes] = await Promise.all([
+                fetch(ENDPOINTS.BRANCHES.DETAIL(id)),
+                fetch(ENDPOINTS.COUNTRIES.LIST),
+            ]);
+
+            if (branchRes.ok) {
+                const data = await branchRes.json();
+                setFormData({
+                    ...data,
+                    building_number: data.building_number || '',
+                    address_line_1: data.address_line_1 || data.address || '',
+                    city: data.city || '',
+                    postcode: data.postcode || '',
+                    country: data.country || '',
+                    telephone_1: data.telephone_1 || data.phone || '',
+                    telephone_2: data.telephone_2 || '',
+                    fax_1: data.fax_1 || '',
+                    fax_2: data.fax_2 || '',
+                    email_1: data.email_1 || data.email || '',
+                    email_2: data.email_2 || '',
+                    transaction_prefix: data.transaction_prefix || data.code || '',
+                    default_transaction_type: data.default_transaction_type || data.branch_default_transaction_type || '',
+                    branch_ownership_type: data.branch_ownership_type || 'Own',
+                    remarks: data.remarks || '',
+                    status: data.status || 'active',
+                });
+            }
+
+            if (countriesRes.ok) {
+                setCountries(await countriesRes.json());
+            }
         } catch (e) {
             toast.error("Failed to load branch data");
         } finally {
@@ -125,37 +155,73 @@ export default function BranchDetailsPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="md:col-span-2">
                     <CardHeader>
-                        <CardTitle className="text-lg">Location & Contact</CardTitle>
+                        <CardTitle className="text-lg">Branch Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-2 md:col-span-2">
-                                <Label>Display Name</Label>
+                                <Label>Branch Name</Label>
                                 <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Building Number</Label>
+                                <Input value={formData.building_number} onChange={e => setFormData({...formData, building_number: e.target.value})} />
                             </div>
                             <div className="space-y-2 md:col-span-2">
                                 <Label>Address</Label>
-                                <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
+                                <Input value={formData.address_line_1} onChange={e => setFormData({...formData, address_line_1: e.target.value})} />
                             </div>
                             <div className="space-y-2">
-                                <Label>Primary Phone</Label>
-                                <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                                <Label>City</Label>
+                                <Input value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
                             </div>
                             <div className="space-y-2">
-                                <Label>Daily Limit (GBP)</Label>
-                                <Input type="number" value={formData.day_transfer_limit} onChange={e => setFormData({...formData, day_transfer_limit: e.target.value})} />
+                                <Label>Postcode</Label>
+                                <Input value={formData.postcode} onChange={e => setFormData({...formData, postcode: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Country</Label>
+                                <Select value={formData.country} onValueChange={v => setFormData({...formData, country: v})}>
+                                    <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
+                                    <SelectContent>
+                                        {countries.map(country => (
+                                            <SelectItem key={country.id} value={country.name}>{country.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                         
                         <Separator />
                         
-                        <div className="space-y-2">
-                            <Label>Internal Remarks</Label>
-                            <Textarea 
-                                rows={3} 
-                                value={formData.remarks || ''} 
-                                onChange={e => setFormData({...formData, remarks: e.target.value})}
-                            />
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold">Contact Section</h3>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label>Primary Contact</Label>
+                                    <Input value={formData.telephone_1} onChange={e => setFormData({...formData, telephone_1: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Secondary Contact</Label>
+                                    <Input value={formData.telephone_2} onChange={e => setFormData({...formData, telephone_2: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Primary Fax</Label>
+                                    <Input value={formData.fax_1} onChange={e => setFormData({...formData, fax_1: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Secondary Fax</Label>
+                                    <Input value={formData.fax_2} onChange={e => setFormData({...formData, fax_2: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Primary Email</Label>
+                                    <Input type="email" value={formData.email_1} onChange={e => setFormData({...formData, email_1: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Secondary Email</Label>
+                                    <Input type="email" value={formData.email_2} onChange={e => setFormData({...formData, email_2: e.target.value})} />
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -170,7 +236,7 @@ export default function BranchDetailsPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-xs">Transaction Prefix</Label>
-                                <Input value={formData.transaction_prefix} readOnly className="bg-muted font-mono" />
+                                <Input value={formData.transaction_prefix} onChange={e => setFormData({...formData, transaction_prefix: e.target.value.toUpperCase()})} className="font-mono uppercase" />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-xs">Default Mode</Label>
@@ -184,7 +250,11 @@ export default function BranchDetailsPage() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">Ownership</Label>
+                                <Label className="text-xs">Daily Transfer Limit</Label>
+                                <Input type="number" value={formData.day_transfer_limit || ''} onChange={e => setFormData({...formData, day_transfer_limit: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs">Branch Ownership Type</Label>
                                 <Select value={formData.branch_ownership_type} onValueChange={v => setFormData({...formData, branch_ownership_type: v})}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
@@ -192,6 +262,20 @@ export default function BranchDetailsPage() {
                                         <SelectItem value="Agent">Agent Office</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs">Status</Label>
+                                <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs">Remarks</Label>
+                                <Textarea rows={4} value={formData.remarks} onChange={e => setFormData({...formData, remarks: e.target.value})} />
                             </div>
                         </CardContent>
                     </Card>

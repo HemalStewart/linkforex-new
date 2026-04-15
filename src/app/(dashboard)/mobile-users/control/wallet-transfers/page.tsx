@@ -214,7 +214,7 @@ export default function WalletTransfersPage() {
                                             <span className="text-xs font-bold">{row.source_amount.toFixed(2)} {row.source_currency}</span>
                                             <ArrowRight size={10} className="my-0.5 text-muted-foreground" />
                                             <span className="text-xs font-bold text-emerald-600">{row.dest_amount.toFixed(2)} {row.payout_currency}</span>
-                                            <span className="text-[9px] text-muted-foreground mt-1">Rate: {row.rate.toFixed(4)}</span>
+                                            <span className="text-[9px] text-muted-foreground mt-1">Rate: {row.rate.toFixed(2)}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="max-w-[150px]">

@@ -194,7 +194,7 @@ export default function CurrenciesPage() {
                                             />
                                         ) : (
                                             <Badge variant="outline" className="font-mono">
-                                                {parseFloat(currency.rate).toFixed(4)}
+                                                {parseFloat(currency.rate).toFixed(2)}
                                             </Badge>
                                         )}
                                     </TableCell>
