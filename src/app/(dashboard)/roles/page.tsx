@@ -139,7 +139,7 @@ export default function RolesPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" onClick={fetchRoles} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={fetchRoles} disabled={loading} aria-label="Refresh roles" title="Refresh roles">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

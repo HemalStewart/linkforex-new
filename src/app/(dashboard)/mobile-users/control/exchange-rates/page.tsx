@@ -92,7 +92,7 @@ export default function MobileExchangeRatesPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Customer Digital Rates</h1>
                     <p className="text-muted-foreground">Mobile-specific exchange rates backed by branch operations.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={fetchData} disabled={loading} aria-label="Refresh mobile exchange rates" title="Refresh mobile exchange rates">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

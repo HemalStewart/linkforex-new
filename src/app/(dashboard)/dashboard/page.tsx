@@ -44,6 +44,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export default function DashboardPage() {
+    const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalTransfers: 0,
@@ -55,6 +56,10 @@ export default function DashboardPage() {
     const [volumeData, setVolumeData] = useState<any[]>([]);
     const [statusChartData, setStatusChartData] = useState<any[]>([]);
     const [revenueData, setRevenueData] = useState<any[]>([]);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         void fetchDashboardData();
@@ -235,25 +240,29 @@ export default function DashboardPage() {
                         <CardDescription>Transaction volume for the last 7 days.</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                        <div className="h-[350px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={volumeData}>
-                                    <defs>
-                                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                    <Tooltip 
-                                        contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
-                                        itemStyle={{ color: 'hsl(var(--foreground))' }}
-                                    />
-                                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                        <div className="h-[350px] min-h-[350px]">
+                            {mounted ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={volumeData}>
+                                        <defs>
+                                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+                                            itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                        />
+                                        <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full w-full animate-pulse rounded-xl bg-muted/50" />
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -297,25 +306,29 @@ export default function DashboardPage() {
                         <CardDescription>Current transfer statuses distribution.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px] w-full relative">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={statusChartData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {statusChartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
+                        <div className="relative h-[300px] min-h-[300px] w-full">
+                            {mounted ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={statusChartData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                        >
+                                            {statusChartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full w-full animate-pulse rounded-xl bg-muted/50" />
+                            )}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-2xl font-bold">{stats.totalTransfers}</span>
                                 <span className="text-xs text-muted-foreground uppercase">Total</span>
@@ -338,16 +351,20 @@ export default function DashboardPage() {
                         <CardDescription>Revenue generated by top 5 branches.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="h-[300px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={revenueData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `£${val}`} />
-                                    <Tooltip cursor={{fill: 'hsl(var(--muted))', opacity: 0.4}} />
-                                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                        <div className="h-[300px] min-h-[300px]">
+                            {mounted ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={revenueData}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `£${val}`} />
+                                        <Tooltip cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }} />
+                                        <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full w-full animate-pulse rounded-xl bg-muted/50" />
+                            )}
                         </div>
                     </CardContent>
                 </Card>

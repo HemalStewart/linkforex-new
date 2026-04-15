@@ -235,7 +235,7 @@ export default function UsersPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" onClick={fetchUsers} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={fetchUsers} disabled={loading} aria-label="Refresh system users" title="Refresh system users">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

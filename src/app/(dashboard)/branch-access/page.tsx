@@ -90,8 +90,8 @@ export default function BranchAccessPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Branch Access Queue</h1>
                     <p className="text-muted-foreground">Approve senders requesting access to use a different branch.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => void fetchRows()}>
-                    <RefreshCcw size={14} className="mr-2" /> Refresh
+                <Button variant="outline" size="icon" onClick={() => void fetchRows()} aria-label="Refresh branch access flags" title="Refresh branch access flags">
+                    <RefreshCcw size={14} />
                 </Button>
             </div>
 

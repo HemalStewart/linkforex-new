@@ -133,8 +133,8 @@ export default function TransferDetailsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void fetchData()}>
-                        <RotateCcw size={14} className="mr-2" /> Refresh
+                    <Button variant="outline" size="icon" onClick={() => void fetchData()} aria-label="Refresh transfer" title="Refresh transfer">
+                        <RotateCcw size={14} />
                     </Button>
                     <Button size="sm">
                         <Download size={14} className="mr-2" /> Receipt

@@ -198,7 +198,7 @@ export default function LogsPage() {
                     <p className="text-muted-foreground">Monitor user sessions, IP addresses and system activities.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={fetchLogs} disabled={loading} aria-label="Refresh user logs" title="Refresh user logs">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button size="sm">

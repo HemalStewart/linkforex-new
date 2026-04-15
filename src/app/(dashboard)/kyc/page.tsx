@@ -104,8 +104,8 @@ export default function KYCPage() {
                     <p className="text-muted-foreground">Review and verify client onboarding applications.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void fetchRemitters()}>
-                        <RefreshCcw size={14} className="mr-2" /> Refresh
+                    <Button variant="outline" size="icon" onClick={() => void fetchRemitters()} aria-label="Refresh KYC reviews" title="Refresh KYC reviews">
+                        <RefreshCcw size={14} />
                     </Button>
                     <Button size="sm">
                         <Download size={14} className="mr-2" /> Export

@@ -129,7 +129,7 @@ export default function WalletTransfersPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Wallet Funding Queue</h1>
                     <p className="text-muted-foreground">Review and settle manual wallet-to-crypto transfers.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={loadTransfers} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={loadTransfers} disabled={loading} aria-label="Refresh wallet transfers" title="Refresh wallet transfers">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

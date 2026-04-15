@@ -108,7 +108,7 @@ export default function BranchesPage() {
                     <p className="text-muted-foreground">Manage branch details and transfer limits.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={fetchBranches} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={fetchBranches} disabled={loading} aria-label="Refresh branches" title="Refresh branches">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button asChild>

@@ -110,7 +110,7 @@ export default function MobileProfilesPage() {
                     <p className="text-muted-foreground">Manage and review remitters registered via mobile application.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={fetchRemitters}>
+                    <Button variant="outline" size="icon" onClick={fetchRemitters} aria-label="Refresh mobile profiles" title="Refresh mobile profiles">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button size="sm">

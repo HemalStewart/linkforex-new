@@ -173,7 +173,7 @@ export default function MobileAppFlowSettingsPage() {
                     <p className="text-muted-foreground">Configure global mobile app logic and security thresholds.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={loadSettings} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={loadSettings} disabled={loading} aria-label="Refresh app flow settings" title="Refresh app flow settings">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button size="sm" onClick={saveSettings} disabled={savingSettings || loading}>

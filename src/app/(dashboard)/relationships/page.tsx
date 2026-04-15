@@ -234,11 +234,13 @@ export default function RelationshipsPage() {
                 <div className="flex items-center space-x-2">
                     <Button
                         variant="outline"
+                        size="icon"
                         onClick={fetchRelationships}
                         disabled={loading}
+                        aria-label="Refresh relationships"
+                        title="Refresh relationships"
                     >
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     </Button>
                     <Button onClick={openCreateModal}>
                         <PlusCircle className="mr-2 h-4 w-4" />

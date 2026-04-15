@@ -45,7 +45,7 @@ export default function CreateBranchCurrencyRatePage() {
     const [existingRows, setExistingRows] = useState<any[]>([]);
     
     const [formData, setFormData] = useState({
-        branchCode: '',
+        branchId: '',
         currencyCode: '',
         customerRate: '',
         setAllBranches: false
@@ -77,7 +77,7 @@ export default function CreateBranchCurrencyRatePage() {
         try {
             const targetBranches = formData.setAllBranches 
                 ? branches.filter(b => b.is_sender_branch || b.sender_enabled === 'yes') 
-                : [branches.find(b => b.code === formData.branchCode)];
+                : [branches.find(b => String(b.id) === formData.branchId)];
 
             if (targetBranches.length === 0 || !targetBranches[0]) {
                 toast.error("No valid branches selected");
@@ -159,18 +159,18 @@ export default function CreateBranchCurrencyRatePage() {
                             </div>
                             <Switch 
                                 checked={formData.setAllBranches} 
-                                onCheckedChange={v => setFormData({...formData, setAllBranches: v, branchCode: v ? '' : formData.branchCode})} 
+                                onCheckedChange={v => setFormData({...formData, setAllBranches: v, branchId: v ? '' : formData.branchId})} 
                             />
                         </div>
 
                         {!formData.setAllBranches && (
                             <div className="space-y-2">
                                 <Label className="text-xs">Specific Branch</Label>
-                                <Select value={formData.branchCode} onValueChange={v => setFormData({...formData, branchCode: v})}>
+                                <Select value={formData.branchId} onValueChange={v => setFormData({...formData, branchId: v})}>
                                     <SelectTrigger><SelectValue placeholder="Select target branch" /></SelectTrigger>
                                     <SelectContent>
                                         {senderBranches.map(b => (
-                                            <SelectItem key={b.id} value={b.code || b.transaction_prefix}>{b.name} ({b.code || b.transaction_prefix})</SelectItem>
+                                            <SelectItem key={`branch-${b.id}`} value={String(b.id)}>{b.name} ({b.code || b.transaction_prefix})</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -184,7 +184,7 @@ export default function CreateBranchCurrencyRatePage() {
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         {currencies.map(c => (
-                                            <SelectItem key={c.id} value={c.currency_code}>{c.currency_code} - {c.name}</SelectItem>
+                                            <SelectItem key={`currency-${c.id}`} value={c.currency_code}>{c.currency_code} - {c.name}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

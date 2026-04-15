@@ -139,7 +139,7 @@ export default function MobileInAppAdsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">In-App Ads</h1>
                     <p className="text-muted-foreground">Manage promotional banners and featured content in the app.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={loadAds} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={loadAds} disabled={loading} aria-label="Refresh in-app ads" title="Refresh in-app ads">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

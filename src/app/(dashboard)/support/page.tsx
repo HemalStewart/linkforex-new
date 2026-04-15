@@ -171,7 +171,7 @@ export default function SupportPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Help & Support</h1>
                     <p className="text-muted-foreground">Manage mobile support requests and customer conversations.</p>
                 </div>
-                <Button onClick={fetchTickets} variant="outline" size="sm">
+                <Button onClick={fetchTickets} variant="outline" size="icon" aria-label="Refresh support inbox" title="Refresh support inbox">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

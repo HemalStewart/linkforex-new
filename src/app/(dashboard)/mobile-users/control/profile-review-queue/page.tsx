@@ -106,7 +106,7 @@ export default function MobileProfileReviewQueuePage() {
                     <h1 className="text-3xl font-bold tracking-tight">Profile Review Queue</h1>
                     <p className="text-muted-foreground">Review and verify pending mobile profiles.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={loadQueue} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={loadQueue} disabled={loading} aria-label="Refresh profile review queue" title="Refresh profile review queue">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

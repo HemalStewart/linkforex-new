@@ -91,8 +91,14 @@ export default function CreateUserPage() {
 
         setSubmitting(true);
         const payload = new FormData();
+        const selectedBranch = branches.find((branch) => String(branch.id) === formData.branch);
         Object.entries(formData).forEach(([key, val]) => {
-            if (key !== 'confirmPassword') payload.append(key, val);
+            if (key === 'confirmPassword') return;
+            if (key === 'branch') {
+                payload.append('branch', selectedBranch?.code || selectedBranch?.name || '');
+                return;
+            }
+            payload.append(key, val);
         });
         
         const roleName = roles.find(r => r.id.toString() === formData.roleId)?.name || 'staff';
@@ -241,12 +247,12 @@ export default function CreateUserPage() {
                                     onValueChange={v => setFormData({...formData, branch: v})}
                                 >
                                     <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
-                                    <SelectContent>
-                                        {branches.map(b => (
-                                            <SelectItem key={b.id} value={b.code || b.name}>{b.name}</SelectItem>
+                                        <SelectContent>
+                                            {branches.map(b => (
+                                            <SelectItem key={`branch-${b.id}`} value={String(b.id)}>{b.name}</SelectItem>
                                         ))}
-                                    </SelectContent>
-                                </Select>
+                                        </SelectContent>
+                                    </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label>Status</Label>

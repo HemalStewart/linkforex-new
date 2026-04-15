@@ -69,9 +69,8 @@ export default function PermissionGroupsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Role Permissions</h1>
           <p className="text-muted-foreground">Manage permission groups by role, page section, and operation.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadRows} disabled={loading}>
-          <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
-          Refresh
+        <Button variant="outline" size="icon" onClick={loadRows} disabled={loading} aria-label="Refresh permission groups" title="Refresh permission groups">
+          <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
         </Button>
       </div>
 

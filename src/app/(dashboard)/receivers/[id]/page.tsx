@@ -122,8 +122,8 @@ export default function ReceiverDetailsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void fetchData()}>
-                        <RefreshCw size={14} className="mr-2" /> Refresh
+                    <Button variant="outline" size="icon" onClick={() => void fetchData()} aria-label="Refresh receiver" title="Refresh receiver">
+                        <RefreshCw size={14} />
                     </Button>
                     <Button size="sm" onClick={handleSave} disabled={submitting}>
                         {submitting ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Save size={14} className="mr-2" />}

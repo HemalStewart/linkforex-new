@@ -140,7 +140,7 @@ export default function PurposesPage() {
                     <p className="text-muted-foreground">Manage the list of purposes available to customers for their transfers.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button onClick={fetchPurposes} variant="outline" size="sm">
+                    <Button onClick={fetchPurposes} variant="outline" size="icon" aria-label="Refresh purposes" title="Refresh purposes">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button onClick={() => handleOpenModal()} size="sm">

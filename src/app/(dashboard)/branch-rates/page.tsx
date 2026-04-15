@@ -57,13 +57,18 @@ export default function BranchRatesPage() {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState({
-        branchCode: '',
+        branchId: '',
         currencyCode: '',
         cashRate: '',
         branchRate: '',
         digitalRate: '',
         applyToAll: false
     });
+
+    const selectedBranch = useMemo(
+        () => branches.find((branch) => String(branch.id) === form.branchId) || null,
+        [branches, form.branchId]
+    );
 
     const fetchData = async () => {
         setLoading(true);
@@ -120,9 +125,48 @@ export default function BranchRatesPage() {
     const startIndex = (page - 1) * pageSize;
     const pagedRows = filteredRows.slice(startIndex, startIndex + pageSize);
 
+    useEffect(() => {
+        if (!modalOpen || !selectedBranch || !form.currencyCode) return;
+
+        const branchCode = String(selectedBranch.code || selectedBranch.transaction_prefix || selectedBranch.id);
+        const matchingRows = rows.filter((row) => {
+            const rowCode = String(row.branch_code || '').trim();
+            const rowCurrency = String(row.currency_code || '').trim().toUpperCase();
+            return rowCode === branchCode && rowCurrency === form.currencyCode;
+        });
+
+        const sortByLatest = (a: any, b: any) =>
+            new Date(b.updated_at || b.created_at || 0).getTime() -
+            new Date(a.updated_at || a.created_at || 0).getTime();
+
+        const activeRow = matchingRows
+            .filter((row) => String(row.active || '').toLowerCase() === 'yes')
+            .sort(sortByLatest)[0];
+
+        const fallbackRow = [...matchingRows].sort(sortByLatest)[0];
+        const rateRow = activeRow || fallbackRow;
+
+        if (!rateRow) {
+            setForm((prev) => ({
+                ...prev,
+                cashRate: '',
+                branchRate: '',
+                digitalRate: '',
+            }));
+            return;
+        }
+
+        setForm((prev) => ({
+            ...prev,
+            cashRate: Number(rateRow.customer_rate || 0).toFixed(2),
+            branchRate: Number(rateRow.branch_rate || 0).toFixed(2),
+            digitalRate: Number(rateRow.digital_rate || 0).toFixed(2),
+        }));
+    }, [modalOpen, selectedBranch, form.currencyCode, rows]);
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.branchCode || !form.currencyCode || !form.cashRate) {
+        if (!form.branchId || !form.currencyCode || !form.cashRate) {
             toast.warning("Missing required fields");
             return;
         }
@@ -132,7 +176,6 @@ export default function BranchRatesPage() {
             const user = getStoredUser<any>();
             const userName = user?.username || user?.name || 'Admin';
             
-            const selectedBranch = branches.find(b => String(b.code || b.transaction_prefix || b.id) === form.branchCode);
             const selectedCur = currencies.find(c => c.code === form.currencyCode);
 
             const targetBranches = form.applyToAll ? branches : [selectedBranch];
@@ -182,7 +225,7 @@ export default function BranchRatesPage() {
                     <p className="text-muted-foreground">Manage cash, branch, and digital rates per branch.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={fetchData} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={fetchData} disabled={loading} aria-label="Refresh branch rates" title="Refresh branch rates">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button onClick={() => setModalOpen(true)}>
@@ -281,19 +324,23 @@ export default function BranchRatesPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Branch</Label>
-                                <Select onValueChange={v => setForm({...form, branchCode: v})}>
+                                <Select value={form.branchId} onValueChange={v => setForm({...form, branchId: v})}>
                                     <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
                                     <SelectContent>
-                                        {branches.map(b => <SelectItem key={b.id} value={String(b.code || b.transaction_prefix || b.id)}>{b.name}</SelectItem>)}
+                                        {branches.map(b => (
+                                            <SelectItem key={`branch-${b.id}`} value={String(b.id)}>
+                                                {b.code ? `${b.name} (${b.code})` : b.name}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label>Currency</Label>
-                                <Select onValueChange={v => setForm({...form, currencyCode: v})}>
+                                <Select value={form.currencyCode} onValueChange={v => setForm({...form, currencyCode: v})}>
                                     <SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger>
                                     <SelectContent>
-                                        {currencies.map(c => <SelectItem key={c.code} value={c.code}>{c.code} - {c.name}</SelectItem>)}
+                                        {currencies.map(c => <SelectItem key={`currency-${c.code}`} value={c.code}>{c.code} - {c.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>

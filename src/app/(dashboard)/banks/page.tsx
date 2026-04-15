@@ -192,7 +192,7 @@ export default function BanksPage() {
                     <p className="text-muted-foreground">Manage sender, receiver, and cash pickup banks.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={fetchBanks} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={fetchBanks} disabled={loading} aria-label="Refresh banks" title="Refresh banks">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                     </Button>
                     <Button onClick={openCreateModal}><PlusCircle className="mr-2 h-4 w-4" /> Add Bank</Button>

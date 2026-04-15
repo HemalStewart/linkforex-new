@@ -115,7 +115,7 @@ export default function MobileControlOverviewPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Mobile Control Center</h1>
                     <p className="text-muted-foreground">Central management for the Linkforex mobile ecosystem.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={loadOverview} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={loadOverview} disabled={loading} aria-label="Refresh mobile control overview" title="Refresh mobile control overview">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

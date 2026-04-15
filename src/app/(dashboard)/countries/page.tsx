@@ -309,9 +309,8 @@ export default function CountriesPage() {
                     </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Button variant="outline" onClick={fetchCountries} disabled={loading}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh
+                    <Button variant="outline" size="icon" onClick={fetchCountries} disabled={loading} aria-label="Refresh countries" title="Refresh countries">
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     </Button>
                     <Button onClick={openAddModal}>
                         <PlusCircle className="mr-2 h-4 w-4" />

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { ENDPOINTS } from '@/lib/api';
 import { getStoredUser } from '@/lib/authStorage';
 import {
@@ -40,10 +41,9 @@ import {
   CheckCircle2,
   XCircle,
   Printer,
+  PlusCircle,
   ChevronLeft,
   ChevronRight,
-  TrendingUp,
-  ImageUp,
   RotateCcw,
 } from 'lucide-react';
 import { toast } from "sonner";
@@ -318,8 +318,11 @@ export default function TransfersPage() {
                     <p className="text-muted-foreground">Manage and track all money transfers.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={fetchData} disabled={loading}>
+                    <Button variant="outline" size="icon" onClick={fetchData} disabled={loading} aria-label="Refresh transfers" title="Refresh transfers">
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
+                    </Button>
+                    <Button asChild>
+                        <Link href="/transfers/create"><PlusCircle className="mr-2 h-4 w-4" /> Add Transfer</Link>
                     </Button>
                 </div>
             </div>
@@ -384,6 +387,9 @@ export default function TransfersPage() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
+                                            <Button variant="ghost" size="icon" asChild title="View transfer">
+                                                <Link href={`/transfers/${row.id}`}><Eye size={16} /></Link>
+                                            </Button>
                                             <Button variant="ghost" size="icon" onClick={() => handlePrint(row)}><Printer size={16} /></Button>
                                             <Button variant="ghost" size="icon" onClick={() => openSignModal(row.id)} title="Sign Receipt">
                                                 <PenLine size={16} className={row.signatureSigned ? 'text-primary' : ''} />
@@ -450,4 +456,3 @@ export default function TransfersPage() {
         </div>
     );
 }
-

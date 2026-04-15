@@ -112,8 +112,8 @@ export default function BranchDetailsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void fetchData()}>
-                        <RefreshCw size={14} className="mr-2" /> Refresh
+                    <Button variant="outline" size="icon" onClick={() => void fetchData()} aria-label="Refresh branch" title="Refresh branch">
+                        <RefreshCw size={14} />
                     </Button>
                     <Button size="sm" onClick={handleSave} disabled={submitting}>
                         {submitting ? <RefreshCw size={14} className="mr-2 animate-spin" /> : <Save size={14} className="mr-2" />}

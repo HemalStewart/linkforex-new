@@ -97,9 +97,8 @@ export default function BeneficiariesPage() {
                     <p className="text-muted-foreground">Manage global beneficiary accounts and bank details.</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Button variant="outline" onClick={fetchBeneficiaries} disabled={loading}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        Refresh
+                    <Button variant="outline" size="icon" onClick={fetchBeneficiaries} disabled={loading} aria-label="Refresh beneficiaries" title="Refresh beneficiaries">
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     </Button>
                 </div>
             </div>

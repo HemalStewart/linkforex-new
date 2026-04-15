@@ -124,7 +124,7 @@ export default function MobileCampaignsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Campaign Center</h1>
                     <p className="text-muted-foreground">Manage push and email notifications for mobile users.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={loadCampaigns} disabled={loading}>
+                <Button variant="outline" size="icon" onClick={loadCampaigns} disabled={loading} aria-label="Refresh campaigns" title="Refresh campaigns">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
             </div>

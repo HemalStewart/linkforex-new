@@ -71,9 +71,13 @@ export default function BranchCurrencyRatesPage() {
     }, []);
 
     const branchOptions = useMemo(() => {
-        const entries = rows.map(r => ({ code: r.branch_code, name: r.branch_name })).filter(r => r.code);
-        const unique = Array.from(new Set(entries.map(e => e.code))).map(code => entries.find(e => e.code === code));
-        return unique.sort((a,b) => (a?.name || '').localeCompare(b?.name || ''));
+        const unique = new Map<string, { code: string; name: string }>();
+        rows.forEach((row) => {
+            const code = String(row.branch_code || '').trim();
+            if (!code || unique.has(code)) return;
+            unique.set(code, { code, name: row.branch_name || code });
+        });
+        return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
     }, [rows]);
 
     const filteredRows = useMemo(() => {
@@ -101,8 +105,8 @@ export default function BranchCurrencyRatesPage() {
                     <p className="text-muted-foreground">Manage real-time currency rates for branch cash operations.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void fetchData()}>
-                        <RefreshCcw size={14} className="mr-2" /> Refresh
+                    <Button variant="outline" size="icon" onClick={() => void fetchData()} aria-label="Refresh branch currency rates" title="Refresh branch currency rates">
+                        <RefreshCcw size={14} />
                     </Button>
                     <Button size="sm" asChild>
                         <Link href="/branch-currency-rates/create">
@@ -130,7 +134,7 @@ export default function BranchCurrencyRatesPage() {
                         <SelectContent>
                             <SelectItem value="all">All Branches</SelectItem>
                             {branchOptions.map(b => (
-                                <SelectItem key={b?.code} value={b?.code || ''}>{b?.name} ({b?.code})</SelectItem>
+                                <SelectItem key={`branch-filter-${b.code}`} value={b.code}>{b.name} ({b.code})</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>

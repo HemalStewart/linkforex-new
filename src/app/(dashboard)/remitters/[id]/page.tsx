@@ -173,7 +173,7 @@ export default function RemitterDetailsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void fetchRemitter()} disabled={veriffLoading}>
+                    <Button variant="outline" size="icon" onClick={() => void fetchRemitter()} disabled={veriffLoading} aria-label="Refresh remitter" title="Refresh remitter">
                         <RefreshCw className={veriffLoading ? 'animate-spin' : ''} size={14} />
                     </Button>
                     <Button variant="destructive" size="sm" onClick={handleDelete}>
@@ -334,14 +334,15 @@ export default function RemitterDetailsPage() {
                                 >
                                     <Shield size={14} className="mr-2" /> Start Verification
                                 </Button>
-                                <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="w-full justify-start"
+                                <Button
+                                    size="icon"
+                                    variant="outline"
                                     onClick={() => handleVeriff('sync')}
                                     disabled={veriffLoading}
+                                    aria-label="Sync compliance"
+                                    title="Sync compliance"
                                 >
-                                    <RefreshCw size={14} className="mr-2" /> Sync Compliance
+                                    <RefreshCw size={14} className={veriffLoading ? 'animate-spin' : ''} />
                                 </Button>
                                 {formData.veriff_url && (
                                     <Button size="sm" variant="secondary" className="w-full justify-start" asChild>
