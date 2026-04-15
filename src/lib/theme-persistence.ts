@@ -9,7 +9,7 @@ export type ThemeCustomizerState = {
 };
 
 export const defaultThemeCustomizerState: ThemeCustomizerState = {
-  selectedTheme: "default",
+  selectedTheme: "",
   selectedTweakcnTheme: "",
   selectedRadius: "0.5rem",
 };

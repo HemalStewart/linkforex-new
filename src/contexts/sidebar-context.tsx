@@ -16,15 +16,49 @@ export interface SidebarContextValue {
 export const SidebarContext = React.createContext<SidebarContextValue | null>(null)
 
 export function SidebarConfigProvider({ children }: { children: React.ReactNode }) {
-  const [config, setConfig] = React.useState<SidebarConfig>({
-    variant: "inset",
-    collapsible: "offcanvas", 
-    side: "left"
+  const STORAGE_KEY = "linkforex-sidebar-config"
+  const [config, setConfig] = React.useState<SidebarConfig>(() => {
+    if (typeof window === "undefined") {
+      return {
+        variant: "inset",
+        collapsible: "offcanvas",
+        side: "left",
+      }
+    }
+
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY)
+      if (!raw) {
+        return {
+          variant: "inset",
+          collapsible: "offcanvas",
+          side: "left",
+        }
+      }
+
+      const parsed = JSON.parse(raw)
+      return {
+        variant: parsed.variant || "inset",
+        collapsible: parsed.collapsible || "offcanvas",
+        side: parsed.side || "left",
+      }
+    } catch {
+      return {
+        variant: "inset",
+        collapsible: "offcanvas",
+        side: "left",
+      }
+    }
   })
 
   const updateConfig = React.useCallback((newConfig: Partial<SidebarConfig>) => {
     setConfig(prev => ({ ...prev, ...newConfig }))
   }, [])
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+  }, [config])
 
   return (
     <SidebarContext.Provider value={{ config, updateConfig }}>

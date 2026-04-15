@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarConfigProvider } from "@/contexts/sidebar-context";
 import { inter } from "@/lib/fonts";
 import {
+  THEME_CUSTOMIZER_STORAGE_KEY,
   THEME_SNAPSHOT_STORAGE_KEY,
   THEME_STORAGE_KEY,
 } from "@/lib/theme-persistence";
@@ -29,6 +30,22 @@ export default function RootLayout({
           ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
           : storedTheme;
         root.classList.add(resolvedTheme);
+
+        var rawCustomizer = localStorage.getItem('${THEME_CUSTOMIZER_STORAGE_KEY}');
+        if (rawCustomizer) {
+          try {
+            var customizer = JSON.parse(rawCustomizer);
+            var hasPersistentTheme =
+              (!!customizer.selectedTheme && customizer.selectedTheme !== 'default') ||
+              !!customizer.selectedTweakcnTheme ||
+              (customizer.selectedRadius && customizer.selectedRadius !== '0.5rem');
+            if (!hasPersistentTheme) {
+              localStorage.removeItem('${THEME_SNAPSHOT_STORAGE_KEY}');
+            }
+          } catch (error) {
+            localStorage.removeItem('${THEME_SNAPSHOT_STORAGE_KEY}');
+          }
+        }
 
         var rawSnapshot = localStorage.getItem('${THEME_SNAPSHOT_STORAGE_KEY}');
         if (!rawSnapshot) return;

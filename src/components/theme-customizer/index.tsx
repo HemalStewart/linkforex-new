@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import type { ImportedTheme } from '@/types/theme-customizer'
 import {
   THEME_CUSTOMIZER_STORAGE_KEY,
+  THEME_SNAPSHOT_STORAGE_KEY,
   defaultThemeCustomizerState,
 } from '@/lib/theme-persistence'
 
@@ -28,7 +29,7 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
   const { config: sidebarConfig, updateConfig: updateSidebarConfig } = useSidebarConfig()
 
   const [activeTab, setActiveTab] = React.useState("theme")
-  const [selectedTheme, setSelectedTheme] = React.useState("default")
+  const [selectedTheme, setSelectedTheme] = React.useState("")
   const [selectedTweakcnTheme, setSelectedTweakcnTheme] = React.useState("")
   const [selectedRadius, setSelectedRadius] = React.useState("0.5rem")
   const [importModalOpen, setImportModalOpen] = React.useState(false)
@@ -42,9 +43,18 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
       const raw = window.localStorage.getItem(THEME_CUSTOMIZER_STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
-        setSelectedTheme(parsed.selectedTheme ?? defaultThemeCustomizerState.selectedTheme)
+        const legacySelectedTheme = parsed.selectedTheme === "default" ? "" : parsed.selectedTheme
+        setSelectedTheme(legacySelectedTheme ?? defaultThemeCustomizerState.selectedTheme)
         setSelectedTweakcnTheme(parsed.selectedTweakcnTheme ?? defaultThemeCustomizerState.selectedTweakcnTheme)
         setSelectedRadius(parsed.selectedRadius ?? defaultThemeCustomizerState.selectedRadius)
+
+        if (
+          parsed.selectedTheme === "default" &&
+          !parsed.selectedTweakcnTheme &&
+          (parsed.selectedRadius ?? defaultThemeCustomizerState.selectedRadius) === defaultThemeCustomizerState.selectedRadius
+        ) {
+          window.localStorage.removeItem(THEME_SNAPSHOT_STORAGE_KEY)
+        }
       }
     } catch {
       // ignore malformed persisted theme customizer state
@@ -70,7 +80,7 @@ export function ThemeCustomizer({ open, onOpenChange }: ThemeCustomizerProps) {
     // Complete reset to application defaults
 
     // 1. Reset all state variables to initial values
-    setSelectedTheme("default")
+    setSelectedTheme("")
     setSelectedTweakcnTheme("")
     setSelectedRadius("0.5rem")
     setImportedTheme(null) // Clear imported theme

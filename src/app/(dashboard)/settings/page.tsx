@@ -17,6 +17,7 @@ import {
     Camera
 } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
+import { getStoredUser } from '@/lib/authStorage';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -54,8 +55,7 @@ export default function SettingsPage() {
         const fetchProfile = async () => {
             try {
                 // Mocking stored user fetch or real API call
-                const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-                const user = userStr ? JSON.parse(userStr) : null;
+                const user = getStoredUser<any>();
                 if (user?.id) {
                     const res = await fetch(ENDPOINTS.USERS.DETAIL(user.id));
                     if (res.ok) setProfile(await res.json());

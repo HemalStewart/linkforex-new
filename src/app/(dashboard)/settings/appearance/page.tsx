@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -14,6 +15,9 @@ import {
 } from "@/components/ui/form"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTheme } from "@/hooks/use-theme"
+import { getStoredUiSettings, applyUiSettings } from "@/lib/uiPreferences"
+import { toast } from "sonner"
 
 const appearanceFormSchema = z.object({
   theme: z.enum(["light", "dark"]),
@@ -26,20 +30,37 @@ const appearanceFormSchema = z.object({
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 export default function AppearanceSettings() {
+  const { theme, setTheme } = useTheme()
+  const storedUi = React.useMemo(() => getStoredUiSettings(), [])
+
   const form = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceFormSchema),
     defaultValues: {
-      theme: "dark",
+      theme: theme === "light" ? "light" : "dark",
       fontFamily: "",
-      fontSize: "",
+      fontSize: String(storedUi.tableFontSizePx),
       sidebarWidth: "",
       contentWidth: "",
     },
   })
 
+  React.useEffect(() => {
+    form.reset({
+      theme: theme === "light" ? "light" : "dark",
+      fontFamily: "",
+      fontSize: String(getStoredUiSettings().tableFontSizePx),
+      sidebarWidth: "",
+      contentWidth: "",
+    })
+  }, [theme, form])
+
   function onSubmit(data: AppearanceFormValues) {
-    console.log("Form submitted:", data)
-    // Here you would typically save the data
+    setTheme(data.theme)
+    applyUiSettings({
+      ...getStoredUiSettings(),
+      tableFontSizePx: Number(data.fontSize || getStoredUiSettings().tableFontSizePx),
+    })
+    toast.success("Appearance settings updated")
   }
 
   return (
@@ -131,8 +152,8 @@ export default function AppearanceSettings() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Font Family</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue placeholder="Select a font" />
                       </SelectTrigger>
@@ -153,16 +174,16 @@ export default function AppearanceSettings() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Font Size</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue placeholder="Select font size" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="small">Small</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
+                      <SelectItem value="12">Small</SelectItem>
+                      <SelectItem value="14">Medium</SelectItem>
+                      <SelectItem value="17">Large</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -177,7 +198,7 @@ export default function AppearanceSettings() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sidebar Width</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue placeholder="Select sidebar width" />
@@ -199,7 +220,7 @@ export default function AppearanceSettings() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Content Width</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue placeholder="Select content width" />

@@ -55,10 +55,32 @@ export default function CreateTransferPage() {
     const [selectedBeneficiary, setSelectedBeneficiary] = useState<any>(null);
     const [selectedBranchRate, setSelectedBranchRate] = useState('');
 
+    const isSenderBranch = (branch: any) => {
+        const senderFlag = String(
+            branch.sender_enabled ?? branch.is_sender_branch ?? branch.sender_branch ?? ''
+        ).toLowerCase();
+        const transactionType = String(
+            branch.default_transaction_type ?? branch.branch_default_transaction_type ?? ''
+        ).toLowerCase();
+
+        return (
+            branch.is_sender_branch === true ||
+            senderFlag === 'yes' ||
+            senderFlag === '1' ||
+            transactionType === 'sender' ||
+            transactionType === 'both'
+        );
+    };
+
+    const senderBranches = useMemo(
+        () => branches.filter(isSenderBranch),
+        [branches]
+    );
+
     const branchOptions = useMemo(() => {
         const seen = new Set<string>();
 
-        return branches.reduce<Array<{ value: string; label: string }>>((items, branch) => {
+        return senderBranches.reduce<Array<{ value: string; label: string }>>((items, branch) => {
             const id = String(branch?.id ?? '').trim();
             if (!id || seen.has(id)) return items;
 
@@ -70,7 +92,7 @@ export default function CreateTransferPage() {
 
             return items;
         }, []);
-    }, [branches]);
+    }, [senderBranches]);
 
     const currencyOptions = useMemo(() => {
         const seen = new Set<string>();
@@ -100,8 +122,8 @@ export default function CreateTransferPage() {
     });
 
     const selectedBranch = useMemo(
-        () => branches.find((branch) => String(branch.id) === formData.to_branch) || null,
-        [branches, formData.to_branch]
+        () => senderBranches.find((branch) => String(branch.id) === formData.to_branch) || null,
+        [senderBranches, formData.to_branch]
     );
 
     useEffect(() => {
@@ -187,10 +209,11 @@ export default function CreateTransferPage() {
                     setBranchRates(Array.isArray(rateData) ? rateData : []);
                 }
 
-                if (branchData.length) {
+                const availableSenderBranches = (Array.isArray(branchData) ? branchData : []).filter(isSenderBranch);
+                if (availableSenderBranches.length) {
                     setFormData((prev) => ({
                         ...prev,
-                        to_branch: prev.to_branch || String(branchData[0].id),
+                        to_branch: prev.to_branch || String(availableSenderBranches[0].id),
                     }));
                 }
             } catch (e) {
@@ -236,9 +259,40 @@ export default function CreateTransferPage() {
         setFormData(prev => ({
             ...prev,
             receive_amount: source,
-            dest_amount: source === '' ? '' : (s * r).toFixed(2)
+            dest_amount: source === '' || rate === '' ? '' : (s * r).toFixed(2)
         }));
     };
+
+    useEffect(() => {
+        const sourceAmount = String(formData.receive_amount ?? '');
+        const rate = String(formData.customer_rate ?? '');
+
+        if (sourceAmount === '' || rate === '') {
+            setFormData((prev) => {
+                if (prev.dest_amount === '') return prev;
+                return {
+                    ...prev,
+                    dest_amount: '',
+                };
+            });
+            return;
+        }
+
+        const source = Number(sourceAmount);
+        const customerRate = Number(rate);
+        const nextDestAmount =
+            Number.isFinite(source) && Number.isFinite(customerRate)
+                ? (source * customerRate).toFixed(2)
+                : '';
+
+        setFormData((prev) => {
+            if (prev.dest_amount === nextDestAmount) return prev;
+            return {
+                ...prev,
+                dest_amount: nextDestAmount,
+            };
+        });
+    }, [formData.receive_amount, formData.customer_rate]);
 
     useEffect(() => {
         if (!selectedBranch || !formData.payout_currency) return;
