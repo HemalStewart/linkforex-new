@@ -69,6 +69,25 @@ export default function CreateTransferPage() {
     const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
     const [selectedBeneficiary, setSelectedBeneficiary] = useState<any>(null);
 
+    const branchOptions = useMemo(
+        () =>
+            branches.map((branch) => ({
+                value: String(branch.id),
+                label: branch.code ? `${branch.name} (${branch.code})` : branch.name,
+            })),
+        [branches]
+    );
+
+    const currencyOptions = useMemo(() => {
+        const seen = new Set<string>();
+        return currencies.filter((currency) => {
+            const code = String(currency?.code || '').trim().toUpperCase();
+            if (!code || seen.has(code)) return false;
+            seen.add(code);
+            return true;
+        });
+    }, [currencies]);
+
     // Form State
     const [formData, setFormData] = useState({
         to_branch: '',
@@ -149,6 +168,7 @@ export default function CreateTransferPage() {
                 ...formData,
                 remitter_id: selectedSender.id,
                 beneficiary_id: selectedBeneficiary.id,
+                branch_id: formData.to_branch,
                 status: 'pending'
             };
             const res = await fetch(ENDPOINTS.TRANSFERS.LIST, {
@@ -203,8 +223,8 @@ export default function CreateTransferPage() {
                                     >
                                         <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
                                         <SelectContent>
-                                            {branches.map(b => (
-                                                <SelectItem key={b.id} value={b.code || b.name}>{b.name}</SelectItem>
+                                            {branchOptions.map((branch) => (
+                                                <SelectItem key={branch.value} value={branch.value}>{branch.label}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -217,8 +237,10 @@ export default function CreateTransferPage() {
                                     >
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            {currencies.map(c => (
-                                                <SelectItem key={c.id} value={c.code}>{c.code}</SelectItem>
+                                            {currencyOptions.map((currency) => (
+                                                <SelectItem key={String(currency.id)} value={String(currency.code).toUpperCase()}>
+                                                    {String(currency.code).toUpperCase()}
+                                                </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
