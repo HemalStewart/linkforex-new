@@ -52,14 +52,6 @@ export default function CreateReceiverPage() {
     const [countries, setCountries] = useState<any[]>([]);
     const [relationships, setRelationships] = useState<any[]>([]);
 
-    const eligibleBanks = useMemo(() => {
-        const isCashPickup = formData.payment_mode.toLowerCase().includes('cash') || formData.payment_mode.toLowerCase().includes('pickup');
-        return banks.filter((bank) => {
-            if (isCashPickup) return String(bank?.pickup_bank || '').toLowerCase() === 'yes' || Number(bank?.pickup_bank) === 1;
-            return String(bank?.receiver_bank || '').toLowerCase() === 'yes' || Number(bank?.receiver_bank) === 1;
-        });
-    }, [banks, formData.payment_mode]);
-
     const [formData, setFormData] = useState({
         customer_id: preselectedCustomerId,
         name: '',
@@ -79,6 +71,14 @@ export default function CreateReceiverPage() {
         mobile_number: '',
         status: 'active'
     });
+
+    const eligibleBanks = useMemo(() => {
+        const isCashPickup = formData.payment_mode.toLowerCase().includes('cash') || formData.payment_mode.toLowerCase().includes('pickup');
+        return banks.filter((bank) => {
+            if (isCashPickup) return String(bank?.pickup_bank || '').toLowerCase() === 'yes' || Number(bank?.pickup_bank) === 1;
+            return String(bank?.receiver_bank || '').toLowerCase() === 'yes' || Number(bank?.receiver_bank) === 1;
+        });
+    }, [banks, formData.payment_mode]);
 
     useEffect(() => {
         const fetchInitial = async () => {
