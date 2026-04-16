@@ -15,9 +15,9 @@ export const metadata: Metadata = {
   title: "LinkForex",
   description: "LinkForex new admin UI",
   icons: {
-    icon: "/logo-removebg-preview.png",
-    shortcut: "/logo-removebg-preview.png",
-    apple: "/logo-removebg-preview.png",
+    icon: "/favicon-x.png",
+    shortcut: "/favicon-x.png",
+    apple: "/favicon-x.png",
   },
 };
 
