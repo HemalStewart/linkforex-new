@@ -35,10 +35,11 @@ import {
   Eye,
   Trash2,
   ShieldCheck,
-  Building2,
   Phone,
-  Calendar,
   Tag,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { toast } from "sonner";
 
@@ -48,6 +49,8 @@ export default function RemittersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [sourceFilter, setSourceFilter] = useState('all');
+    const [sortKey, setSortKey] = useState<'info' | 'contact' | 'idKyc' | 'status' | 'joined'>('joined');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(50);
 
@@ -78,13 +81,55 @@ export default function RemittersPage() {
 
     const filteredRemitters = useMemo(() => {
         const query = searchQuery.trim().toLowerCase();
-        return remitters.filter(r => 
+        const filtered = remitters.filter(r => 
             (r.name || r.sender_name || '').toLowerCase().includes(query) ||
             (r.email || '').toLowerCase().includes(query) ||
             (r.phone || r.telephone || '').toLowerCase().includes(query) ||
             (r.sender_id || '').toLowerCase().includes(query)
         );
-    }, [remitters, searchQuery]);
+
+        return [...filtered].sort((left, right) => {
+            const direction = sortDirection === 'asc' ? 1 : -1;
+            const getSortValue = (row: any) => {
+                switch (sortKey) {
+                    case 'info':
+                        return String(row.name || row.sender_name || '').toLowerCase();
+                    case 'contact':
+                        return String(row.email || row.phone || row.telephone || '').toLowerCase();
+                    case 'idKyc':
+                        return String(row.sender_id || row.id_number || row.id_no || '').toLowerCase();
+                    case 'status':
+                        return String(row.status || '').toLowerCase();
+                    case 'joined':
+                    default:
+                        return new Date(row.created_at || 0).getTime();
+                }
+            };
+
+            const leftValue = getSortValue(left);
+            const rightValue = getSortValue(right);
+
+            if (leftValue < rightValue) return -1 * direction;
+            if (leftValue > rightValue) return 1 * direction;
+            return 0;
+        });
+    }, [remitters, searchQuery, sortDirection, sortKey]);
+
+    const handleSort = (key: typeof sortKey) => {
+        if (sortKey === key) {
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            return;
+        }
+        setSortKey(key);
+        setSortDirection(key === 'joined' ? 'desc' : 'asc');
+    };
+
+    const renderSortIcon = (key: typeof sortKey) => {
+        if (sortKey !== key) return <ArrowUpDown className="h-3.5 w-3.5" />;
+        return sortDirection === 'asc'
+            ? <ArrowUp className="h-3.5 w-3.5" />
+            : <ArrowDown className="h-3.5 w-3.5" />;
+    };
 
     const totalRows = filteredRemitters.length;
     const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
@@ -161,11 +206,31 @@ export default function RemittersPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-12">#</TableHead>
-                            <TableHead>Remitter Info</TableHead>
-                            <TableHead>Contact</TableHead>
-                            <TableHead>ID / KYC</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Joined</TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('info')}>
+                                    Remitter Info {renderSortIcon('info')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('contact')}>
+                                    Contact {renderSortIcon('contact')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('idKyc')}>
+                                    ID / KYC {renderSortIcon('idKyc')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('status')}>
+                                    Status {renderSortIcon('status')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('joined')}>
+                                    Joined {renderSortIcon('joined')}
+                                </button>
+                            </TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>

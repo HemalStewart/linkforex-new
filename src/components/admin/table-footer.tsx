@@ -29,8 +29,8 @@ export function AdminTableFooter({
   const showingTo = totalRows === 0 ? 0 : Math.min(endIndex, totalRows);
 
   return (
-    <div className="flex flex-col gap-3 border-t bg-card px-4 py-4">
-      <p className="text-sm text-muted-foreground">
+    <div className="-mt-px flex flex-col gap-4 rounded-b-md border border-border bg-card px-4 py-4 md:flex-row md:items-center md:justify-between">
+      <p className="text-sm text-muted-foreground whitespace-nowrap">
         Showing {showingFrom} to {showingTo} of {totalRows}
       </p>
       <Pagination

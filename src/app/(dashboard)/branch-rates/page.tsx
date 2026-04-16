@@ -34,6 +34,9 @@ import {
 import {
   RefreshCw,
   PlusCircle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -47,6 +50,8 @@ export default function BranchRatesPage() {
     const [currencies, setCurrencies] = useState<any[]>([]);
     const [search, setSearch] = useState('');
     const [activeFilter, setActiveFilter] = useState('all');
+    const [sortKey, setSortKey] = useState<'branch' | 'currency' | 'cashRate' | 'branchRate' | 'digitalRate' | 'status' | 'updatedAt'>('updatedAt');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(25);
 
@@ -134,8 +139,58 @@ export default function BranchRatesPage() {
                 (r.currency_code || '').toLowerCase().includes(query)
             );
         }
-        return rs;
-    }, [rows, search, activeFilter]);
+        return [...rs].sort((left, right) => {
+            const leftStatus = String(left.active || '').toLowerCase() === 'yes' ? 0 : 1;
+            const rightStatus = String(right.active || '').toLowerCase() === 'yes' ? 0 : 1;
+            if (leftStatus !== rightStatus) {
+                return leftStatus - rightStatus;
+            }
+
+            const direction = sortDirection === 'asc' ? 1 : -1;
+            const getValue = (row: any) => {
+                switch (sortKey) {
+                    case 'branch':
+                        return String(row.branch_name || '').toLowerCase();
+                    case 'currency':
+                        return String(row.currency_code || '').toLowerCase();
+                    case 'cashRate':
+                        return Number(row.customer_rate || 0);
+                    case 'branchRate':
+                        return Number(row.branch_rate || 0);
+                    case 'digitalRate':
+                        return Number(row.digital_rate || 0);
+                    case 'status':
+                        return String(row.active || '').toLowerCase();
+                    case 'updatedAt':
+                    default:
+                        return new Date(row.updated_at || row.created_at || 0).getTime();
+                }
+            };
+
+            const leftValue = getValue(left);
+            const rightValue = getValue(right);
+
+            if (leftValue < rightValue) return -1 * direction;
+            if (leftValue > rightValue) return 1 * direction;
+            return 0;
+        });
+    }, [rows, search, activeFilter, sortDirection, sortKey]);
+
+    const handleSort = (key: typeof sortKey) => {
+        if (sortKey === key) {
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            return;
+        }
+        setSortKey(key);
+        setSortDirection(key === 'updatedAt' ? 'desc' : 'asc');
+    };
+
+    const renderSortIcon = (key: typeof sortKey) => {
+        if (sortKey !== key) return <ArrowUpDown className="h-3.5 w-3.5" />;
+        return sortDirection === 'asc'
+            ? <ArrowUp className="h-3.5 w-3.5" />
+            : <ArrowDown className="h-3.5 w-3.5" />;
+    };
 
     const totalRows = filteredRows.length;
     const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
@@ -285,13 +340,41 @@ export default function BranchRatesPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-12">#</TableHead>
-                            <TableHead>Branch</TableHead>
-                            <TableHead>Currency</TableHead>
-                            <TableHead>Cash Rate</TableHead>
-                            <TableHead>Branch Rate</TableHead>
-                            <TableHead>Digital Rate</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Modified Date</TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('branch')}>
+                                    Branch {renderSortIcon('branch')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('currency')}>
+                                    Currency {renderSortIcon('currency')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('cashRate')}>
+                                    Cash Rate {renderSortIcon('cashRate')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('branchRate')}>
+                                    Branch Rate {renderSortIcon('branchRate')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('digitalRate')}>
+                                    Digital Rate {renderSortIcon('digitalRate')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('status')}>
+                                    Status {renderSortIcon('status')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button type="button" className="inline-flex items-center gap-1 font-medium" onClick={() => handleSort('updatedAt')}>
+                                    Modified Date {renderSortIcon('updatedAt')}
+                                </button>
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
