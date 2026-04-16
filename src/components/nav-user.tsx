@@ -2,6 +2,7 @@
 
 import { EllipsisVertical, LogOut, CircleUser, Settings } from "lucide-react"
 import Link from "next/link"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,9 +45,12 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">
-                {initials}
-              </div>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                <AvatarFallback className="bg-primary/12 text-xs font-semibold text-primary">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="text-muted-foreground truncate text-xs">
@@ -64,9 +68,12 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">
-                  {initials}
-                </div>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                  <AvatarFallback className="bg-primary/12 text-xs font-semibold text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="text-muted-foreground truncate text-xs">

@@ -21,20 +21,16 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import {
-  Search,
   PlusCircle,
   Trash2,
   Eye,
   RefreshCw,
-  Tag,
   Phone,
   ArrowRightLeft,
-  GitBranch,
   Edit2,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { toast } from "sonner";
 
@@ -79,6 +75,14 @@ export default function BranchesPage() {
     const startIndex = (page - 1) * rowsPerPage;
     const pagedBranches = filteredBranches.slice(startIndex, startIndex + rowsPerPage);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
@@ -117,17 +121,13 @@ export default function BranchesPage() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search branches..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search branches..."
+                title="Search"
+                description="Filter branches by name or transaction prefix."
+            />
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -181,13 +181,16 @@ export default function BranchesPage() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Showing {startIndex + 1} to {Math.min(startIndex + rowsPerPage, totalRows)} of {totalRows}</p>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}><ChevronLeft size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}><ChevronRight size={16} /></Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={page}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={startIndex + rowsPerPage}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={deleteId !== null} onOpenChange={o => !o && setDeleteId(null)}>
                 <DialogContent>

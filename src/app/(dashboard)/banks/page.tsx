@@ -20,18 +20,16 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import {
   Building2,
   Edit2,
   PlusCircle,
   RefreshCw,
   Save,
-  Search,
   Trash2,
   X,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -112,6 +110,14 @@ export default function BanksPage() {
     const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
     const startIndex = (page - 1) * rowsPerPage;
     const pagedBanks = filteredBanks.slice(startIndex, startIndex + rowsPerPage);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const openCreateModal = () => {
         setEditingId(null);
@@ -199,17 +205,13 @@ export default function BanksPage() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search banks..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search banks..."
+                title="Search"
+                description="Filter banks by bank code or bank name."
+            />
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -251,13 +253,16 @@ export default function BanksPage() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Showing {startIndex + 1} to {Math.min(startIndex + rowsPerPage, totalRows)} of {totalRows}</p>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}><ChevronLeft size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}><ChevronRight size={16} /></Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={page}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={startIndex + rowsPerPage}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent>

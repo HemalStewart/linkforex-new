@@ -23,6 +23,7 @@ import Link from "next/link"
 
 import { Logo } from "@/components/logo"
 import { getStoredUser } from "@/lib/authStorage"
+import { resolveProfilePhotoUrl } from "@/lib/user-profile"
 import { SidebarNotification } from "@/components/sidebar-notification"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -118,14 +119,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   })
 
   React.useEffect(() => {
-    const storedUser = getStoredUser<any>()
-    if (!storedUser) return
+    const syncUser = (nextUser?: any) => {
+      const storedUser = nextUser || getStoredUser<any>()
+      if (!storedUser) return
 
-    setCurrentUser({
-      name: storedUser.name || storedUser.username || "System Admin",
-      email: storedUser.email || "admin@linkforex.com",
-      avatar: "",
-    })
+      setCurrentUser({
+        name: storedUser.name || storedUser.username || "System Admin",
+        email: storedUser.email || "admin@linkforex.com",
+        avatar: resolveProfilePhotoUrl(storedUser.profile_photo, storedUser.profile_photo_url) || "",
+      })
+    }
+
+    syncUser()
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== "user" || !event.newValue) return
+      try {
+        syncUser(JSON.parse(event.newValue))
+      } catch {
+        syncUser()
+      }
+    }
+
+    const onUserUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<any>
+      if (!customEvent.detail) return
+      syncUser(customEvent.detail)
+    }
+
+    window.addEventListener("storage", onStorage)
+    window.addEventListener("admin-user-updated", onUserUpdated as EventListener)
+    return () => {
+      window.removeEventListener("storage", onStorage)
+      window.removeEventListener("admin-user-updated", onUserUpdated as EventListener)
+    }
   }, [])
 
   return (
