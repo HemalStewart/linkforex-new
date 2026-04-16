@@ -16,9 +16,9 @@ import {
 } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import { Badge } from "@/components/ui/badge"
-import { Pagination } from "@/components/ui/pagination"
 import {
   Table,
   TableBody,
@@ -98,6 +98,15 @@ export default function BranchCurrencyRatesPage() {
 
     const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, branchFilter, rowsPerPage]);
+
+    useEffect(() => {
+        const safeTotal = Math.max(1, totalPages || 1);
+        if (currentPage > safeTotal) setCurrentPage(safeTotal);
+    }, [currentPage, totalPages]);
+
     if (loading) return <div className="p-12 text-center animate-pulse">Loading rates table...</div>;
 
     return (
@@ -121,15 +130,13 @@ export default function BranchCurrencyRatesPage() {
 
             <div className="space-y-4">
                 <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search rates..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                    <AdminTableFilters
+                        searchValue={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        searchPlaceholder="Search rates..."
+                        title="Search"
+                        description="Filter cash rates by branch or currency."
+                    />
                     <Select value={branchFilter} onValueChange={setBranchFilter}>
                         <SelectTrigger className="w-full md:w-[250px]">
                             <SelectValue placeholder="All Branches" />
@@ -205,15 +212,15 @@ export default function BranchCurrencyRatesPage() {
                     </Table>
                 </div>
                 
-                <Pagination 
+                <AdminTableFooter
                     currentPage={currentPage}
                     totalPages={totalPages}
+                    totalRows={filteredRows.length}
                     rowsPerPage={rowsPerPage}
+                    startIndex={filteredRows.length === 0 ? 0 : (currentPage - 1) * rowsPerPage}
+                    endIndex={(currentPage - 1) * rowsPerPage + rowsPerPage}
                     onPageChange={setCurrentPage}
-                    onRowsPerPageChange={(rows) => {
-                        setRowsPerPage(rows);
-                        setCurrentPage(1);
-                    }}
+                    onRowsPerPageChange={setRowsPerPage}
                 />
             </div>
         </div>

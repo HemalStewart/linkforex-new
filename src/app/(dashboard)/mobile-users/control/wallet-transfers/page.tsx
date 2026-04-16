@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import {
   Select,
   SelectContent,
@@ -49,6 +50,8 @@ export default function WalletTransfersPage() {
     const [rows, setRows] = useState<WalletTransfer[]>([]);
     const [notes, setNotes] = useState<Record<number, string>>({});
     const [draftStatuses, setDraftStatuses] = useState<Record<number, string>>({});
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const loadTransfers = async () => {
         setLoading(true);
@@ -84,6 +87,21 @@ export default function WalletTransfersPage() {
                 .some((value) => String(value || '').toLowerCase().includes(needle))
         );
     }, [rows, search]);
+
+    const totalRows = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedRows = filtered.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [statusFilter, search, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const saveRow = async (row: WalletTransfer) => {
         setSavingId(row.id);
@@ -146,16 +164,13 @@ export default function WalletTransfersPage() {
                 </Card>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search reference, email or tx hash..."
-                        className="pl-8"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+            <AdminTableFilters
+                searchValue={search}
+                onSearchChange={setSearch}
+                searchPlaceholder="Search reference, email or tx hash..."
+                title="Search"
+                description="Filter wallet transfers by reference, email, transaction hash, or status."
+            >
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="All Statuses" />
@@ -166,7 +181,7 @@ export default function WalletTransfersPage() {
                         ))}
                     </SelectContent>
                 </Select>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -183,10 +198,10 @@ export default function WalletTransfersPage() {
                     <TableBody>
                         {loading ? (
                             <TableRow><TableCell colSpan={6} className="h-24 text-center">Loading queue...</TableCell></TableRow>
-                        ) : filtered.length === 0 ? (
+                        ) : pagedRows.length === 0 ? (
                             <TableRow><TableCell colSpan={6} className="h-24 text-center">No transfers found.</TableCell></TableRow>
                         ) : (
-                            filtered.map((row) => (
+                            pagedRows.map((row) => (
                                 <TableRow key={row.id} className="align-top">
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
@@ -267,6 +282,17 @@ export default function WalletTransfersPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
         </div>
     );
 }

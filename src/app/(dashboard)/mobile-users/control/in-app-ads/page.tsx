@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Plus, Trash2, Layout, Image as ImageIcon, Link as LinkIcon, Hash } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
 import type { MobileAd } from '@/lib/mobileControl';
@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -36,6 +38,9 @@ export default function MobileInAppAdsPage() {
     const [loading, setLoading] = useState(true);
     const [creatingAd, setCreatingAd] = useState(false);
     const [ads, setAds] = useState<MobileAd[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [adForm, setAdForm] = useState({
         title: '',
         description: '',
@@ -63,6 +68,32 @@ export default function MobileInAppAdsPage() {
     useEffect(() => {
         void loadAds();
     }, []);
+
+    const filteredAds = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        const sortedAds = [...ads].sort((a, b) => b.priority - a.priority);
+        if (!query) return sortedAds;
+        return sortedAds.filter((ad) =>
+            [ad.title, ad.description, ad.status, ad.click_url]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(query))
+        );
+    }, [ads, searchQuery]);
+
+    const totalRows = filteredAds.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedAds = filteredAds.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const createAd = async () => {
         if (!adForm.title.trim()) {
@@ -228,6 +259,13 @@ export default function MobileInAppAdsPage() {
                         <CardDescription>Managed ads shown on mobile homepage.</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <AdminTableFilters
+                            searchValue={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            searchPlaceholder="Search ad title, description, or status..."
+                            title="Search"
+                            description="Filter ad inventory by title, description, status, or destination URL."
+                        />
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -240,10 +278,10 @@ export default function MobileInAppAdsPage() {
                             <TableBody>
                                 {loading ? (
                                     <TableRow><TableCell colSpan={4} className="h-24 text-center">Loading...</TableCell></TableRow>
-                                ) : ads.length === 0 ? (
+                                ) : pagedAds.length === 0 ? (
                                     <TableRow><TableCell colSpan={4} className="h-24 text-center">No ads found.</TableCell></TableRow>
                                 ) : (
-                                    ads.sort((a,b) => b.priority - a.priority).map((ad) => (
+                                    pagedAds.map((ad) => (
                                         <TableRow key={ad.id}>
                                             <TableCell>
                                                 <div className="flex flex-col gap-1">
@@ -274,6 +312,16 @@ export default function MobileInAppAdsPage() {
                                 )}
                             </TableBody>
                         </Table>
+                        <AdminTableFooter
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalRows={totalRows}
+                            rowsPerPage={rowsPerPage}
+                            startIndex={startIndex}
+                            endIndex={endIndex}
+                            onPageChange={setPage}
+                            onRowsPerPageChange={setRowsPerPage}
+                        />
                     </CardContent>
                 </Card>
             </div>

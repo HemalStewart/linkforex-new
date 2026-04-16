@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdminTableFilters } from "@/components/admin/table-filters";
 import { AdminTableFooter } from "@/components/admin/table-footer";
+import { Input } from "@/components/ui/input";
 import {
   Building2,
   Edit2,

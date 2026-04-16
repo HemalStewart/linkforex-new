@@ -2,12 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { ENDPOINTS } from '@/lib/api';
-import { Search, RefreshCw, ShieldCheck, KeyRound } from 'lucide-react';
+import { RefreshCw, ShieldCheck, KeyRound } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AdminTableFilters } from '@/components/admin/table-filters';
+import { AdminTableFooter } from '@/components/admin/table-footer';
 import { toast } from 'sonner';
 
 type PermissionGroupRow = {
@@ -29,6 +30,8 @@ export default function PermissionGroupsPage() {
   const [rows, setRows] = useState<PermissionGroupRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   const loadRows = async () => {
     setLoading(true);
@@ -62,6 +65,21 @@ export default function PermissionGroupsPage() {
     );
   }, [rows, search]);
 
+  const totalRows = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const pagedRows = filteredRows.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, rowsPerPage]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <div className="flex items-center justify-between gap-4">
@@ -74,26 +92,13 @@ export default function PermissionGroupsPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Search className="h-4 w-4 text-primary" />
-            Search
-          </CardTitle>
-          <CardDescription>Filter role permissions by role, page section, operation, or user.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search role, page section, operation, or user"
-              className="pl-9"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <AdminTableFilters
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search role, page section, operation, or user"
+        title="Search"
+        description="Filter role permissions by role, page section, operation, or user."
+      />
 
       <Card>
         <CardHeader>
@@ -126,14 +131,14 @@ export default function PermissionGroupsPage() {
                   <TableRow>
                     <TableCell colSpan={9} className="h-24 text-center">Loading role permissions...</TableCell>
                   </TableRow>
-                ) : filteredRows.length === 0 ? (
+                ) : pagedRows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="h-24 text-center">No role permissions found.</TableCell>
                   </TableRow>
                 ) : (
-                  filteredRows.map((row, index) => (
+                  pagedRows.map((row, index) => (
                     <TableRow key={row.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{startIndex + index + 1}</TableCell>
                       <TableCell className="font-medium">{row.role_name || '-'}</TableCell>
                       <TableCell>{row.page_section || '-'}</TableCell>
                       <TableCell>
@@ -155,6 +160,17 @@ export default function PermissionGroupsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <AdminTableFooter
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalRows={totalRows}
+        rowsPerPage={rowsPerPage}
+        startIndex={startIndex}
+        endIndex={endIndex}
+        onPageChange={setPage}
+        onRowsPerPageChange={setRowsPerPage}
+      />
     </div>
   );
 }

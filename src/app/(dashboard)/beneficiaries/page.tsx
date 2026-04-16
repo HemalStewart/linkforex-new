@@ -11,17 +11,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import {
   Users,
   RefreshCw,
-  Search,
   Building2,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   User as UserIcon,
 } from 'lucide-react';
 import { toast } from "sonner";
@@ -84,6 +81,14 @@ export default function BeneficiariesPage() {
     const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
     const pagedBeneficiaries = sortedBeneficiaries.slice(startIndex, endIndex);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     const toggleSort = (key: string) => {
         if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
         else { setSortKey(key); setSortDir('asc'); }
@@ -103,17 +108,13 @@ export default function BeneficiariesPage() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by name, bank, account number..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by name, bank, account number..."
+                title="Search"
+                description="Filter beneficiaries by name, bank, account number, or customer ID."
+            />
 
             <div className="rounded-md border bg-card">
                 <div className="overflow-x-auto">
@@ -194,15 +195,15 @@ export default function BeneficiariesPage() {
                 </div>
             </div>
 
-            <Pagination 
-                currentPage={page}
+            <AdminTableFooter
+                currentPage={currentPage}
                 totalPages={totalPages}
+                totalRows={totalRows}
                 rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
                 onPageChange={setPage}
-                onRowsPerPageChange={(rows) => {
-                    setRowsPerPage(rows);
-                    setPage(1);
-                }}
+                onRowsPerPageChange={setRowsPerPage}
             />
         </div>
     );

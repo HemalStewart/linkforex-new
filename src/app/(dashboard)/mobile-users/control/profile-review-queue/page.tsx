@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Search, ShieldCheck, ShieldX, UserCheck, UserX } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
 import type { QueueUser } from '@/lib/mobileControl';
@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import {
   Select,
   SelectContent,
@@ -37,6 +38,8 @@ export default function MobileProfileReviewQueuePage() {
     const [queueStatus, setQueueStatus] = useState<string>('pending');
     const [queueSearch, setQueueSearch] = useState('');
     const [submitting, setSubmitting] = useState<number | null>(null);
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const loadQueue = async () => {
         setLoading(true);
@@ -62,6 +65,24 @@ export default function MobileProfileReviewQueuePage() {
         }, 300);
         return () => clearTimeout(t);
     }, [queueStatus, queueSearch]);
+
+    const totalRows = queue.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedQueue = useMemo(
+        () => queue.slice(startIndex, endIndex),
+        [queue, startIndex, endIndex]
+    );
+
+    useEffect(() => {
+        setPage(1);
+    }, [queueStatus, queueSearch, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const performAction = async (user: QueueUser, action: 'sync' | 'approve' | 'reject') => {
         setSubmitting(user.id);
@@ -111,16 +132,13 @@ export default function MobileProfileReviewQueuePage() {
                 </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by name, email, or ID..."
-                        className="pl-8"
-                        value={queueSearch}
-                        onChange={(e) => setQueueSearch(e.target.value)}
-                    />
-                </div>
+            <AdminTableFilters
+                searchValue={queueSearch}
+                onSearchChange={setQueueSearch}
+                searchPlaceholder="Search by name, email, or ID..."
+                title="Search"
+                description="Filter the mobile profile review queue by user details and status."
+            >
                 <Select value={queueStatus} onValueChange={setQueueStatus}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Status" />
@@ -132,7 +150,7 @@ export default function MobileProfileReviewQueuePage() {
                         <SelectItem value="all">All Statuses</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -148,10 +166,10 @@ export default function MobileProfileReviewQueuePage() {
                     <TableBody>
                         {loading ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading queue...</TableCell></TableRow>
-                        ) : queue.length === 0 ? (
+                        ) : pagedQueue.length === 0 ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">No profiles found.</TableCell></TableRow>
                         ) : (
-                            queue.map((user) => (
+                            pagedQueue.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -215,6 +233,17 @@ export default function MobileProfileReviewQueuePage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
         </div>
     );
 }

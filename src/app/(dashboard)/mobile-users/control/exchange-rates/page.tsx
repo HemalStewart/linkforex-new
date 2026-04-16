@@ -28,13 +28,16 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import { toast } from "sonner"
 
 export default function MobileExchangeRatesPage() {
     const [rows, setRows] = useState<MobileExchangeRate[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const fetchData = async () => {
         setLoading(true);
@@ -85,6 +88,21 @@ export default function MobileExchangeRatesPage() {
         });
     }, [filteredRows]);
 
+    const totalRows = sortedRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedRows = sortedRows.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     return (
         <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
             <div className="flex items-center justify-between">
@@ -97,17 +115,13 @@ export default function MobileExchangeRatesPage() {
                 </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search currency, branch, or rate..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search currency, branch, or rate..."
+                title="Search"
+                description="Filter mobile digital rates by currency, branch, or rate."
+            />
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -123,10 +137,10 @@ export default function MobileExchangeRatesPage() {
                     <TableBody>
                         {loading ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading rates...</TableCell></TableRow>
-                        ) : sortedRows.length === 0 ? (
+                        ) : pagedRows.length === 0 ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">No digital rates found.</TableCell></TableRow>
                         ) : (
-                            sortedRows.map((row) => (
+                            pagedRows.map((row) => (
                                 <TableRow key={row.id}>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -163,6 +177,16 @@ export default function MobileExchangeRatesPage() {
                     </TableBody>
                 </Table>
             </div>
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
             <p className="text-[10px] text-muted-foreground flex items-center gap-1 italic">
                 Note: Digital rates are derived from branch-level rates and cannot be edited directly here.
             </p>

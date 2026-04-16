@@ -21,16 +21,14 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import {
-  Search,
   PlusCircle,
   Trash2,
   Eye,
   Shield,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { toast } from "sonner";
 
@@ -112,6 +110,14 @@ export default function RolesPage() {
     const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
     const pagedRoles = sortedRoles.slice(startIndex, endIndex);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     const toggleSort = (key: string) => {
         if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
         else { setSortKey(key); setSortDir('asc'); }
@@ -129,20 +135,17 @@ export default function RolesPage() {
                 </Button>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search roles..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search roles..."
+                title="Search"
+                description="Filter roles by role name."
+            >
                 <Button variant="outline" size="icon" onClick={fetchRoles} disabled={loading} aria-label="Refresh roles" title="Refresh roles">
                     <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                 </Button>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -196,13 +199,16 @@ export default function RolesPage() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Showing {startIndex + 1} to {endIndex} of {totalRows}</p>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}><ChevronLeft size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}><ChevronRight size={16} /></Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
                 <DialogContent>

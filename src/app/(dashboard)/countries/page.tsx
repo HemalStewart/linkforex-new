@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -33,13 +35,10 @@ import {
 import {
   PlusCircle,
   RefreshCw,
-  Search,
   Trash2,
   Edit2,
   Globe,
   Save,
-  ChevronLeft,
-  ChevronRight,
   ShieldAlert,
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
@@ -219,6 +218,14 @@ export default function CountriesPage() {
     const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
     const pagedCountries = sortedCountries.slice(startIndex, endIndex);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, highRiskFilter, blackListFilter, payoutFilter, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     const openAddModal = () => {
         setEditingId(null);
         setForm(EMPTY_FORM);
@@ -319,20 +326,15 @@ export default function CountriesPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-12 gap-4">
-                <div className="xl:col-span-6">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search by country, code, currency..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div className="xl:col-span-2">
-                    <Select value={highRiskFilter} onValueChange={(val) => setHighRiskFilter(val as any)}>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by country, code, currency..."
+                title="Search"
+                description="Filter countries by name, code, currency, and risk flags."
+            >
+                <div className="w-full md:w-44">
+                    <Select value={highRiskFilter} onValueChange={(val) => setHighRiskFilter(val as 'all' | YesNo)}>
                         <SelectTrigger>
                             <SelectValue placeholder="High Risk" />
                         </SelectTrigger>
@@ -343,8 +345,8 @@ export default function CountriesPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="xl:col-span-2">
-                    <Select value={blackListFilter} onValueChange={(val) => setBlackListFilter(val as any)}>
+                <div className="w-full md:w-44">
+                    <Select value={blackListFilter} onValueChange={(val) => setBlackListFilter(val as 'all' | YesNo)}>
                         <SelectTrigger>
                             <SelectValue placeholder="Blacklist" />
                         </SelectTrigger>
@@ -355,8 +357,8 @@ export default function CountriesPage() {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="xl:col-span-2">
-                    <Select value={payoutFilter} onValueChange={(val) => setPayoutFilter(val as any)}>
+                <div className="w-full md:w-44">
+                    <Select value={payoutFilter} onValueChange={(val) => setPayoutFilter(val as 'all' | YesNo)}>
                         <SelectTrigger>
                             <SelectValue placeholder="Payout" />
                         </SelectTrigger>
@@ -367,7 +369,7 @@ export default function CountriesPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card">
                 <div className="overflow-x-auto">
@@ -441,19 +443,16 @@ export default function CountriesPage() {
                 </div>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                    Showing {Math.min(startIndex + 1, totalRows)} to {endIndex} of {totalRows}
-                </p>
-                <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>
-                        <ChevronLeft className="h-4 w-4" /> Previous
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
-                        Next <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="max-w-2xl">

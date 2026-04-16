@@ -3,22 +3,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { 
     Eye, 
-    Mail, 
-    MessageCircle, 
-    Phone, 
     RefreshCw, 
-    Search, 
     Send, 
-    Trash2, 
-    User, 
-    Save, 
     MessagesSquare,
-    Clock,
-    AlertCircle,
     Loader2,
-    ChevronLeft,
-    ChevronRight,
-    FilterX
 } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
 import {
@@ -29,16 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import {
   Select,
   SelectContent,
@@ -162,7 +144,20 @@ export default function SupportPage() {
         );
     }, [tickets, searchQuery]);
 
-    const paged = filtered.slice((page-1)*pageSize, page*pageSize);
+    const totalRows = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paged = filtered.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, statusFilter, pageSize]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     return (
         <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
@@ -176,17 +171,14 @@ export default function SupportPage() {
                 </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search tickets by subject, email or ID..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                    />
-                </div>
-                <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(1); }}>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search tickets by subject, email or ID..."
+                title="Search"
+                description="Filter support tickets by ticket number, subject, email, or status."
+            >
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -197,7 +189,7 @@ export default function SupportPage() {
                         <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card">
                 <Table>
@@ -252,6 +244,17 @@ export default function SupportPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={pageSize}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setPageSize}
+            />
 
             <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
                 <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0">

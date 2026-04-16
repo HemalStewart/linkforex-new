@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Send, PlusCircle, FileText, History, Users, Megaphone, CheckCircle2 } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
 import type { Campaign } from '@/lib/mobileControl';
@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -37,6 +39,9 @@ export default function MobileCampaignsPage() {
     const [loading, setLoading] = useState(true);
     const [creatingCampaign, setCreatingCampaign] = useState(false);
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [campaignForm, setCampaignForm] = useState({
         title: '',
         message: '',
@@ -63,6 +68,31 @@ export default function MobileCampaignsPage() {
     useEffect(() => {
         void loadCampaigns();
     }, []);
+
+    const filteredCampaigns = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return campaigns;
+        return campaigns.filter((campaign) =>
+            [campaign.title, campaign.channel, campaign.status, campaign.message]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(query))
+        );
+    }, [campaigns, searchQuery]);
+
+    const totalRows = filteredCampaigns.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedCampaigns = filteredCampaigns.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const createCampaign = async (sendNow = false) => {
         if (!campaignForm.title.trim() || !campaignForm.message.trim()) {
@@ -230,6 +260,13 @@ export default function MobileCampaignsPage() {
                         <CardDescription>Drafts and recently sent campaigns.</CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <AdminTableFilters
+                            searchValue={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            searchPlaceholder="Search campaign title, status, or channel..."
+                            title="Search"
+                            description="Filter campaign history by title, status, or delivery channel."
+                        />
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -242,10 +279,10 @@ export default function MobileCampaignsPage() {
                             <TableBody>
                                 {loading ? (
                                     <TableRow><TableCell colSpan={4} className="h-24 text-center">Loading...</TableCell></TableRow>
-                                ) : campaigns.length === 0 ? (
+                                ) : pagedCampaigns.length === 0 ? (
                                     <TableRow><TableCell colSpan={4} className="h-24 text-center">No campaigns yet.</TableCell></TableRow>
                                 ) : (
-                                    campaigns.map((c) => (
+                                    pagedCampaigns.map((c) => (
                                         <TableRow key={c.id}>
                                             <TableCell className="font-medium text-xs">{c.title}</TableCell>
                                             <TableCell>
@@ -268,6 +305,16 @@ export default function MobileCampaignsPage() {
                                 )}
                             </TableBody>
                         </Table>
+                        <AdminTableFooter
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalRows={totalRows}
+                            rowsPerPage={rowsPerPage}
+                            startIndex={startIndex}
+                            endIndex={endIndex}
+                            onPageChange={setPage}
+                            onRowsPerPageChange={setRowsPerPage}
+                        />
                     </CardContent>
                 </Card>
             </div>

@@ -6,13 +6,9 @@ import {
     AlertCircle, 
     Clock3, 
     Download, 
-    FilterX, 
     RefreshCw, 
-    Search, 
     ShieldAlert, 
     UserCheck,
-    ChevronLeft,
-    ChevronRight,
     Terminal,
     Info
 } from 'lucide-react';
@@ -34,7 +30,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import {
   Select,
   SelectContent,
@@ -186,9 +183,20 @@ export default function LogsPage() {
         });
     }, [processedLogs, searchQuery, statusFilter]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
-    const startIndex = (page - 1) * pageSize;
+    const totalRows = filteredLogs.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
     const pagedLogs = filteredLogs.slice(startIndex, startIndex + pageSize);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, statusFilter, dateRangeFilter, pageSize]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     return (
         <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
@@ -247,17 +255,14 @@ export default function LogsPage() {
                 </Card>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by user, IP or country..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                    />
-                </div>
-                <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(1); }}>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by user, IP or country..."
+                title="Search"
+                description="Filter logs by user, IP, country, and session status."
+            >
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -267,7 +272,7 @@ export default function LogsPage() {
                         <SelectItem value="closed">Closed Only</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -332,13 +337,16 @@ export default function LogsPage() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Showing {startIndex + 1} to {Math.min(startIndex + pageSize, filteredLogs.length)} of {filteredLogs.length}</p>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}><ChevronLeft size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}><ChevronRight size={16} /></Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={pageSize}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setPageSize}
+            />
         </div>
     );
 }

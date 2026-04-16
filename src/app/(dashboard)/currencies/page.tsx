@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ENDPOINTS } from '@/lib/api';
 import {
   Table,
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -44,6 +46,9 @@ export default function CurrenciesPage() {
     const [currencies, setCurrencies] = useState<any[]>([]);
     const [countries, setCountries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
     const [editingId, setEditingId] = useState<string | number | null>(null);
     const [editRate, setEditRate] = useState('');
 
@@ -60,6 +65,31 @@ export default function CurrenciesPage() {
         void fetchRates();
         void fetchCountries();
     }, []);
+
+    const filteredCurrencies = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return currencies;
+        return currencies.filter((currency) =>
+            [currency.name, currency.code, currency.symbol, currency.rate]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(query))
+        );
+    }, [currencies, searchQuery]);
+
+    const totalRows = filteredCurrencies.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedCurrencies = filteredCurrencies.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const fetchCountries = async () => {
         try {
@@ -155,6 +185,14 @@ export default function CurrenciesPage() {
                 </div>
             </div>
 
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search currency name, code, symbol, or rate..."
+                title="Search"
+                description="Filter currencies by metadata or current rate."
+            />
+
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
                     <TableHeader>
@@ -169,10 +207,10 @@ export default function CurrenciesPage() {
                     <TableBody>
                         {loading ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading...</TableCell></TableRow>
-                        ) : currencies.length === 0 ? (
+                        ) : pagedCurrencies.length === 0 ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">No currencies found.</TableCell></TableRow>
                         ) : (
-                            currencies.map((currency) => (
+                            pagedCurrencies.map((currency) => (
                                 <TableRow key={currency.id}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
@@ -217,6 +255,17 @@ export default function CurrenciesPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
                 <DialogContent>

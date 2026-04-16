@@ -15,6 +15,8 @@ import {
 import { ENDPOINTS } from '@/lib/api';
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import {
   Table,
   TableBody,
@@ -36,6 +38,9 @@ export default function BranchAccessPage() {
     const [rows, setRows] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState<number | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const fetchRows = async () => {
         setLoading(true);
@@ -54,6 +59,38 @@ export default function BranchAccessPage() {
     useEffect(() => {
         void fetchRows();
     }, []);
+
+    const filteredRows = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return rows;
+        return rows.filter((row) =>
+            [
+                row.sender_name,
+                row.sender_id,
+                row.origin_branch_code,
+                row.requested_branch_code,
+                row.requested_branch_name,
+                row.requested_by_username,
+            ]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(query))
+        );
+    }, [rows, searchQuery]);
+
+    const totalRows = filteredRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedRows = filteredRows.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const performReview = async (id: number, action: 'approve' | 'reject') => {
         setSubmitting(id);
@@ -106,6 +143,14 @@ export default function BranchAccessPage() {
                 </CardHeader>
             </Card>
 
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search remitter, requester, or branch..."
+                title="Search"
+                description="Filter branch access requests by remitter, requester, or branch code."
+            />
+
             <div className="rounded-md border bg-card">
                 <Table>
                     <TableHeader className="bg-muted/50">
@@ -118,7 +163,7 @@ export default function BranchAccessPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {rows.map((row) => (
+                        {pagedRows.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>
                                     <div className="font-bold flex items-center gap-2">
@@ -158,7 +203,8 @@ export default function BranchAccessPage() {
                                         </Button>
                                         <Button 
                                             size="sm" 
-                                            className="h-8 bg-emerald-600 hover:bg-emerald-700"
+                                            variant="outline"
+                                            className="h-8"
                                             disabled={submitting === row.id}
                                             onClick={() => performReview(row.id, 'approve')}
                                         >
@@ -178,6 +224,17 @@ export default function BranchAccessPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
         </div>
     );
 }

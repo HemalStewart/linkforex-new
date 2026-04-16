@@ -20,9 +20,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import {
   Select,
   SelectContent,
@@ -31,12 +31,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Search,
   UserPlus,
   Eye,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
   ShieldCheck,
   Building2,
   Phone,
@@ -94,6 +91,14 @@ export default function RemittersPage() {
     const startIndex = (page - 1) * rowsPerPage;
     const pagedRemitters = filteredRemitters.slice(startIndex, startIndex + rowsPerPage);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, statusFilter, sourceFilter, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     const handleDelete = async () => {
         if (!deleteId) return;
         try {
@@ -123,16 +128,13 @@ export default function RemittersPage() {
                 </Button>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by name, ID, email or phone..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by name, ID, email or phone..."
+                title="Search"
+                description="Filter remitters by profile details, status, and source."
+            >
                 <div className="flex gap-2 w-full md:w-auto">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -152,7 +154,7 @@ export default function RemittersPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -231,15 +233,15 @@ export default function RemittersPage() {
                 </Table>
             </div>
 
-            <Pagination 
+            <AdminTableFooter
                 currentPage={page}
                 totalPages={totalPages}
+                totalRows={totalRows}
                 rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={startIndex + rowsPerPage}
                 onPageChange={setPage}
-                onRowsPerPageChange={(rows) => {
-                    setRowsPerPage(rows);
-                    setPage(1);
-                }}
+                onRowsPerPageChange={setRowsPerPage}
             />
 
             <Dialog open={deleteId !== null} onOpenChange={o => !o && setDeleteId(null)}>

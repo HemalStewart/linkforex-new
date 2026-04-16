@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
     PlusCircle, 
     RefreshCw, 
-    Search, 
     Trash2, 
     Edit2, 
-    ListChecks, 
     Save,
     CheckCircle2,
     XCircle
@@ -21,15 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import { Input } from "@/components/ui/input"
 import {
   Dialog,
@@ -54,6 +47,8 @@ export default function PurposesPage() {
     const [rows, setRows] = useState<PurposeRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
     const [modalOpen, setModalOpen] = useState(false);
     const [editing, setEditing] = useState<PurposeRow | null>(null);
     const [form, setForm] = useState({ name: '', active: true });
@@ -131,6 +126,20 @@ export default function PurposesPage() {
     const filtered = rows.filter(r => 
         !searchQuery || r.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+    const totalRows = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedRows = filtered.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     return (
         <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
@@ -149,17 +158,13 @@ export default function PurposesPage() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Filter purposes..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Filter purposes..."
+                title="Search"
+                description="Filter transfer purposes by purpose name."
+            />
 
             <div className="rounded-md border bg-card">
                 <Table>
@@ -174,10 +179,10 @@ export default function PurposesPage() {
                     <TableBody>
                         {loading ? (
                             <TableRow><TableCell colSpan={4} className="h-24 text-center">Loading...</TableCell></TableRow>
-                        ) : filtered.length === 0 ? (
+                        ) : pagedRows.length === 0 ? (
                             <TableRow><TableCell colSpan={4} className="h-24 text-center">No purposes found.</TableCell></TableRow>
                         ) : (
-                            filtered.map((row) => (
+                            pagedRows.map((row) => (
                                 <TableRow key={row.id}>
                                     <TableCell className="font-mono text-xs">#{row.id}</TableCell>
                                     <TableCell className="font-medium">{row.name}</TableCell>
@@ -201,6 +206,17 @@ export default function PurposesPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent>

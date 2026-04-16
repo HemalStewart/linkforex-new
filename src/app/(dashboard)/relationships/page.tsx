@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -31,13 +33,8 @@ import {
 import {
   PlusCircle,
   RefreshCw,
-  Search,
   Trash2,
   Edit2,
-  Users2,
-  Save,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -136,7 +133,11 @@ export default function RelationshipsPage() {
     const pagedRows = sortedRows.slice(startIndex, endIndex);
 
     useEffect(() => {
-        if (page > totalPages) setPage(1);
+        setPage(1);
+    }, [searchQuery, activeFilter, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
     }, [page, totalPages]);
 
     const openCreateModal = () => {
@@ -249,22 +250,17 @@ export default function RelationshipsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search relationships"
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search relationships"
+                title="Search"
+                description="Filter relationships by name or active status."
+            >
+                <div className="w-full md:w-48">
                     <Select
                         value={activeFilter}
-                        onValueChange={(val) => setActiveFilter(val as any)}
+                        onValueChange={(val) => setActiveFilter(val as 'all' | YesNo)}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Status" />
@@ -276,7 +272,7 @@ export default function RelationshipsPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card">
                 <Table>
@@ -347,31 +343,16 @@ export default function RelationshipsPage() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                    Showing {Math.min(startIndex + 1, totalRows)} to {Math.min(endIndex, totalRows)} of {totalRows}
-                </p>
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(page - 1)}
-                        disabled={page === 1}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                        Previous
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage(page + 1)}
-                        disabled={page === totalPages}
-                    >
-                        Next
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
 
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent>

@@ -21,9 +21,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import {
   Select,
   SelectContent,
@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/select";
 import {
   RefreshCw,
-  Search,
   Eye,
   PenLine,
   Save,
@@ -42,8 +41,6 @@ import {
   XCircle,
   Printer,
   PlusCircle,
-  ChevronLeft,
-  ChevronRight,
   RotateCcw,
 } from 'lucide-react';
 import { toast } from "sonner";
@@ -204,6 +201,14 @@ export default function TransfersPage() {
     const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
     const pagedRows = sortedRows.slice(startIndex, endIndex);
 
+    useEffect(() => {
+        setPage(1);
+    }, [filterStatus, searchQuery, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
+
     const handleAction = async (id: string, action: 'approve' | 'cancel') => {
         const endpoint = action === 'approve' ? ENDPOINTS.TRANSFERS.APPROVE(id) : ENDPOINTS.TRANSFERS.CANCEL(id);
         try {
@@ -327,19 +332,14 @@ export default function TransfersPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search by ID, sender, receiver..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by ID, sender, receiver..."
+                title="Search"
+                description="Filter transfers by invoice, sender, receiver, and status."
+            >
+                <div className="w-full md:w-48">
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
                         <SelectContent>
@@ -351,7 +351,7 @@ export default function TransfersPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -409,15 +409,15 @@ export default function TransfersPage() {
                 </Table>
             </div>
 
-            <Pagination 
+            <AdminTableFooter
                 currentPage={currentPage}
                 totalPages={totalPages}
+                totalRows={totalRows}
                 rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
                 onPageChange={setPage}
-                onRowsPerPageChange={(rows) => {
-                    setRowsPerPage(rows);
-                    setPage(1);
-                }}
+                onRowsPerPageChange={setRowsPerPage}
             />
 
             <Dialog open={signModalOpen} onOpenChange={setSignModalOpen}>

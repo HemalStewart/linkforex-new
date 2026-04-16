@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminTableFilters } from "@/components/admin/table-filters";
+import { AdminTableFooter } from "@/components/admin/table-footer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,13 +34,6 @@ import {
 import {
   RefreshCw,
   PlusCircle,
-  Search,
-  Tag,
-  ArrowRightLeft,
-  GitBranch,
-  Save,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -144,8 +139,18 @@ export default function BranchRatesPage() {
 
     const totalRows = filteredRows.length;
     const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
-    const startIndex = (page - 1) * pageSize;
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
     const pagedRows = filteredRows.slice(startIndex, startIndex + pageSize);
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, activeFilter, pageSize]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     useEffect(() => {
         if (!modalOpen || !selectedBranch || !form.currencyCode) return;
@@ -256,16 +261,13 @@ export default function BranchRatesPage() {
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search branch or currency..."
-                        className="pl-8"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+            <AdminTableFilters
+                searchValue={search}
+                onSearchChange={setSearch}
+                searchPlaceholder="Search branch or currency..."
+                title="Search"
+                description="Filter branch rates by branch, currency, or status."
+            >
                 <div className="w-full md:w-48">
                     <Select value={activeFilter} onValueChange={setActiveFilter}>
                         <SelectTrigger><SelectValue placeholder="All Status" /></SelectTrigger>
@@ -276,7 +278,7 @@ export default function BranchRatesPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card overflow-x-auto">
                 <Table>
@@ -328,13 +330,16 @@ export default function BranchRatesPage() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Showing {startIndex + 1} to {Math.min(startIndex + pageSize, totalRows)} of {totalRows}</p>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}><ChevronLeft size={16} /></Button>
-                    <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}><ChevronRight size={16} /></Button>
-                </div>
-            </div>
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={pageSize}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setPageSize}
+            />
 
             <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                 <DialogContent className="sm:max-w-[600px]">

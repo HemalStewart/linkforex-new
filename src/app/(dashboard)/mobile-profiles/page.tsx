@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { AdminTableFilters } from "@/components/admin/table-filters"
+import { AdminTableFooter } from "@/components/admin/table-footer"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 
@@ -56,6 +57,8 @@ export default function MobileProfilesPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [remitters, setRemitters] = useState<MobileRemitter[]>([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const fetchRemitters = async () => {
         setLoading(true);
@@ -88,6 +91,21 @@ export default function MobileProfilesPage() {
         const debounce = setTimeout(fetchRemitters, 300);
         return () => clearTimeout(debounce);
     }, [searchQuery, statusFilter]);
+
+    const totalRows = remitters.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+    const currentPage = Math.min(page, totalPages);
+    const startIndex = totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const pagedRemitters = remitters.slice(startIndex, endIndex);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchQuery, statusFilter, rowsPerPage]);
+
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     const handleDelete = async (id: string | number) => {
         if (!confirm("Delete this mobile user and linked data?")) return;
@@ -140,16 +158,13 @@ export default function MobileProfilesPage() {
                 </Card>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by name, email or phone..."
-                        className="pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+            <AdminTableFilters
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by name, email or phone..."
+                title="Search"
+                description="Filter mobile profiles by account details and status."
+            >
                 <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-fit">
                     <TabsList>
                         <TabsTrigger value="all">All</TabsTrigger>
@@ -157,7 +172,7 @@ export default function MobileProfilesPage() {
                         <TabsTrigger value="inactive">Inactive</TabsTrigger>
                     </TabsList>
                 </Tabs>
-            </div>
+            </AdminTableFilters>
 
             <div className="rounded-md border bg-card">
                 <Table>
@@ -173,10 +188,10 @@ export default function MobileProfilesPage() {
                     <TableBody>
                         {loading ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">Loading profiles...</TableCell></TableRow>
-                        ) : remitters.length === 0 ? (
+                        ) : pagedRemitters.length === 0 ? (
                             <TableRow><TableCell colSpan={5} className="h-24 text-center">No mobile profiles found.</TableCell></TableRow>
                         ) : (
-                            remitters.map((row) => (
+                            pagedRemitters.map((row) => (
                                 <TableRow key={row.id}>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -202,7 +217,7 @@ export default function MobileProfilesPage() {
                                     </TableCell>
                                     <TableCell className="text-right space-x-1">
                                         <Button variant="ghost" size="icon" asChild>
-                                            <Link href={`/remitters/${row.id}`}><Eye size={16} className="text-blue-500" /></Link>
+                                            <Link href={`/remitters/${row.id}`}><Eye size={16} /></Link>
                                         </Button>
                                         <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)}>
                                             <Trash2 size={16} className="text-destructive" />
@@ -214,6 +229,17 @@ export default function MobileProfilesPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <AdminTableFooter
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalRows={totalRows}
+                rowsPerPage={rowsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setPage}
+                onRowsPerPageChange={setRowsPerPage}
+            />
         </div>
     );
 }
