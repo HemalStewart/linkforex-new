@@ -6,7 +6,7 @@ import {
   Plus,
   Trash2,
   Layout,
-  Image as ImageIcon,
+  Upload,
   Link as LinkIcon,
   Hash,
   Rows3,
@@ -62,11 +62,11 @@ export default function MobileOnboardingCarouselPage() {
   const [placementFilter, setPlacementFilter] = useState<'all' | 'onboarding' | 'home_carousel'>('all');
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [adForm, setAdForm] = useState({
     placement: 'onboarding' as 'onboarding' | 'home_carousel',
     title: '',
     description: '',
-    image_url: '',
     click_url: '',
     priority: 0,
     status: 'active' as 'active' | 'inactive',
@@ -142,10 +142,20 @@ export default function MobileOnboardingCarouselPage() {
 
     setCreatingAd(true);
     try {
+      const formData = new FormData();
+      formData.append('placement', adForm.placement);
+      formData.append('title', adForm.title);
+      formData.append('description', adForm.description);
+      formData.append('click_url', adForm.click_url);
+      formData.append('priority', String(adForm.priority));
+      formData.append('status', adForm.status);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
       const res = await fetch(ENDPOINTS.MOBILE_ADMIN.ADS, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(adForm),
+        body: formData,
       });
 
       if (res.ok) {
@@ -153,11 +163,11 @@ export default function MobileOnboardingCarouselPage() {
           placement: 'onboarding',
           title: '',
           description: '',
-          image_url: '',
           click_url: '',
           priority: 0,
           status: 'active',
         });
+        setImageFile(null);
         await loadAds();
         toast.success('Content item created successfully');
       } else {
@@ -286,15 +296,16 @@ export default function MobileOnboardingCarouselPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="flex items-center gap-1 text-xs font-bold uppercase text-muted-foreground">
-                  <ImageIcon size={12} /> Image URL
+                  <Upload size={12} /> Upload Image
                 </label>
                 <Input
-                  placeholder="https://..."
-                  value={adForm.image_url}
-                  onChange={(event) =>
-                    setAdForm((previous) => ({ ...previous, image_url: event.target.value }))
-                  }
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {imageFile ? imageFile.name : 'Optional image upload'}
+                </p>
               </div>
               <div className="space-y-1">
                 <label className="flex items-center gap-1 text-xs font-bold uppercase text-muted-foreground">
