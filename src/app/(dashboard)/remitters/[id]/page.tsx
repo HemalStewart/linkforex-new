@@ -7,24 +7,11 @@ import {
     ArrowLeft, 
     Save, 
     Trash2, 
-    Building, 
-    Tag, 
-    User, 
-    Calendar, 
-    Phone, 
-    MapPin, 
-    Globe, 
-    Briefcase, 
-    CreditCard, 
-    Shield, 
-    Layers, 
-    FileText, 
     RefreshCw, 
     ExternalLink,
-    CheckCircle2,
-    XCircle,
-    Info,
-    History
+    History,
+    Shield,
+    Info
 } from 'lucide-react';
 import { ENDPOINTS } from '@/lib/api';
 import { Button } from "@/components/ui/button"
@@ -151,7 +138,7 @@ export default function RemitterDetailsPage() {
             case 'pending': return <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">Pending</Badge>;
             case 'rejected': return <Badge variant="destructive">Rejected</Badge>;
             case 'expired': return <Badge variant="outline" className="text-red-600 border-red-600">Expired ID</Badge>;
-            default: return <Badge variant="outline">Not Started</Badge>;
+            default: return <Badge variant="outline">Verification Not Started</Badge>;
         }
     };
 
@@ -191,7 +178,7 @@ export default function RemitterDetailsPage() {
                         <form onSubmit={handleSave} className="space-y-6">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label>Full Name / Business Name</Label>
+                                    <Label>Full Name</Label>
                                     <Input 
                                         value={formData.sender_name || ''} 
                                         onChange={e => setFormData({...formData, sender_name: e.target.value})}

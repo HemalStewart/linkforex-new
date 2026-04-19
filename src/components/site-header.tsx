@@ -28,14 +28,14 @@ export function SiteHeader({ onOpenCustomizer }: { onOpenCustomizer?: () => void
   return (
     <>
       <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b border-white/8 bg-background/90 backdrop-blur-xl transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-        <div className="flex w-full items-center gap-2 px-4 py-3 lg:px-6">
+        <div className="flex w-full items-center gap-2 px-3 py-2 lg:px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mx-2 hidden data-[orientation=vertical]:h-4 sm:block" />
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-sm">
             <SearchTrigger onClick={() => setSearchOpen(true)} />
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" asChild size="sm" className="hidden sm:flex">
+            <Button variant="outline" asChild size="sm" className="hidden sm:flex h-8">
               <Link href="/transfers/create">
                 <CirclePlus className="h-4 w-4" />
                 New Transfer

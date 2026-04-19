@@ -162,7 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <Logo size={30} className="w-auto" />
+                <Logo size={26} className="w-auto" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

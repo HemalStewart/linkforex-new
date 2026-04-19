@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
     ArrowLeft, 
@@ -34,6 +34,9 @@ const generateCode = (prefix: string): string => `${prefix}${Math.floor(10000 + 
 
 export default function CreateTransferPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const newRemitterId = searchParams.get('newRemitterId');
+    const newReceiverId = searchParams.get('newReceiverId');
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -246,11 +249,43 @@ export default function CreateTransferPage() {
         // Load beneficiaries for this sender
         try {
             const res = await fetch(`${ENDPOINTS.BENEFICIARIES.LIST}?customer_id=${remitter.id}`);
-            if (res.ok) setBeneficiaries(await res.json());
+            if (res.ok) {
+                const data = await res.json();
+                const nextBeneficiaries = Array.isArray(data) ? data : [];
+                setBeneficiaries(nextBeneficiaries);
+                return nextBeneficiaries;
+            }
         } catch (e) {
             toast.error("Failed to load beneficiaries");
         }
+
+        return [];
     };
+
+    useEffect(() => {
+        const hydrateFlowSelections = async () => {
+            if (!newRemitterId) return;
+
+            try {
+                const remitterRes = await fetch(ENDPOINTS.REMITTERS.DETAIL(newRemitterId));
+                if (!remitterRes.ok) return;
+
+                const remitter = await remitterRes.json();
+                const nextBeneficiaries = await handleSelectSender(remitter);
+
+                if (newReceiverId) {
+                    const match = nextBeneficiaries.find((beneficiary: any) => String(beneficiary.id) === String(newReceiverId));
+                    if (match) {
+                        setSelectedBeneficiary(match);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to hydrate transfer create selections', error);
+            }
+        };
+
+        void hydrateFlowSelections();
+    }, [newRemitterId, newReceiverId]);
 
     // Amount Calculation Logic
     const calculateRecipientAmount = (source: string, rate: string) => {
@@ -595,7 +630,7 @@ export default function CreateTransferPage() {
                                         </div>
                                     )}
                                     <Button variant="outline" className="w-full text-xs h-8" asChild>
-                                        <Link href="/remitters/create"><Plus size={14} className="mr-2" /> Register New Sender</Link>
+                                        <Link href="/remitters/create?returnUrl=/transfers/create"><Plus size={14} className="mr-2" /> Register New Sender</Link>
                                     </Button>
                                 </div>
                             )}
@@ -646,7 +681,7 @@ export default function CreateTransferPage() {
                                     )}
 
                                     <Button variant="outline" className="w-full text-xs h-8" asChild>
-                                        <Link href={`/receivers/create?remitter_id=${selectedSender.id}`}><Plus size={14} className="mr-2" /> Add New Receiver</Link>
+                                        <Link href={`/receivers/create?customer_id=${selectedSender.id}&returnUrl=/transfers/create`}><Plus size={14} className="mr-2" /> Add New Receiver</Link>
                                     </Button>
                                 </div>
                             )}

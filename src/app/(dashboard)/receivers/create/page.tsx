@@ -42,7 +42,8 @@ import { toast } from "sonner"
 export default function CreateReceiverPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const preselectedCustomerId = searchParams.get('customer_id') || '';
+    const preselectedCustomerId = searchParams.get('customer_id') || searchParams.get('remitter_id') || '';
+    const returnUrl = searchParams.get('returnUrl') || '';
     
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -128,8 +129,14 @@ export default function CreateReceiverPage() {
                 }),
             });
             if (res.ok) {
+                const result = await res.json();
                 toast.success("Receiver added successfully");
-                router.push('/receivers');
+                if (returnUrl) {
+                    const separator = returnUrl.includes('?') ? '&' : '?';
+                    router.push(`${returnUrl}${separator}newRemitterId=${formData.customer_id}&newReceiverId=${result.id}`);
+                } else {
+                    router.push('/receivers');
+                }
             } else {
                 toast.error("Failed to add receiver");
             }

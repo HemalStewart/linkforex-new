@@ -139,6 +139,7 @@
 @layer base {
   html {
     background-color: var(--page-bg);
+    font-size: 15px;
   }
   * {
     @apply border-border outline-ring/50;
@@ -154,6 +155,12 @@
       radial-gradient(circle at top right, var(--page-right-glow), transparent 28%),
       linear-gradient(180deg, var(--page-gradient-start) 0%, var(--page-gradient-end) 100%);
     overscroll-behavior-y: none;
+  }
+}
+
+@media (min-width: 1536px) {
+  html {
+    font-size: 14px;
   }
 }
 
