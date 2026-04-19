@@ -102,8 +102,8 @@ export default function MobileControlOverviewPage() {
         },
         { 
             href: '/mobile-users/control/in-app-ads', 
-            title: 'In-App Ads', 
-            description: 'Create and manage ad inventory shown in the app.',
+            title: 'Onboarding & Carousel', 
+            description: 'Control onboarding slides and homepage carousel content from the backend.',
             icon: Newspaper
         },
     ];

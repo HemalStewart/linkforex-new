@@ -70,7 +70,7 @@ const data = {
             { title: "Wallet Funding Queue", url: "/mobile-users/control/wallet-transfers" },
             { title: "Profile Review Queue", url: "/mobile-users/control/profile-review-queue" },
             { title: "Campaigns", url: "/mobile-users/control/campaigns" },
-            { title: "In-App Ads", url: "/mobile-users/control/in-app-ads" },
+            { title: "Onboarding & Carousel", url: "/mobile-users/control/in-app-ads" },
           ],
         },
       ],
